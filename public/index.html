@@ -15,77 +15,88 @@
 <body class="bg-gray-50 text-gray-800 antialiased min-h-screen flex flex-col">
 
     <!-- ========================================== -->
-    <!-- 1. MANDATORY LOGIN GATEWAY (SHOWN FIRST)   -->
+    <!-- 1. MANDATORY AUTHENTICATION GATEWAY        -->
     <!-- ========================================== -->
-    <div id="authGateModal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="authGateModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative border border-gray-100">
-            <!-- Brand Header -->
-            <div class="text-center mb-6">
-                <div class="w-14 h-14 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/30 mx-auto mb-3">
-                    <i class="fa-solid fa-utensils text-2xl"></i>
+            <!-- Brand -->
+            <div class="text-center mb-5">
+                <div class="w-12 h-12 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/30 mx-auto mb-2.5">
+                    <i class="fa-solid fa-utensils text-xl"></i>
                 </div>
-                <h2 class="text-2xl font-black text-gray-900 tracking-tight">Quick<span class="text-orange-500">Bite</span> Login</h2>
-                <p class="text-xs text-gray-500 mt-1 font-medium">Please sign in to view the campus menu & place orders</p>
+                <h2 class="text-2xl font-black text-gray-900 tracking-tight">Quick<span class="text-orange-500">Bite</span></h2>
+                <p id="gateSubTitle" class="text-xs text-gray-500 mt-0.5 font-medium">Sign in to your account to view menu & order</p>
             </div>
 
-            <!-- Role Selector -->
-            <div class="grid grid-cols-3 gap-2 mb-6 bg-gray-100 p-1.5 rounded-2xl">
-                <button type="button" onclick="selectGateRole('customer')" id="tab-customer" class="py-2 rounded-xl text-xs font-bold transition bg-white text-orange-600 shadow-sm">
-                    <i class="fa-solid fa-user block mb-0.5 text-sm"></i> Customer
+            <!-- Login vs Sign-Up Switcher -->
+            <div class="grid grid-cols-2 gap-1.5 mb-5 bg-gray-100 p-1 rounded-2xl">
+                <button type="button" onclick="setAuthMode('login')" id="modeBtn-login" class="py-2 rounded-xl text-xs font-bold transition bg-white text-orange-600 shadow-sm">
+                    Sign In
                 </button>
-                <button type="button" onclick="selectGateRole('manager')" id="tab-manager" class="py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900">
-                    <i class="fa-solid fa-store block mb-0.5 text-sm"></i> Kitchen
-                </button>
-                <button type="button" onclick="selectGateRole('admin')" id="tab-admin" class="py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900">
-                    <i class="fa-solid fa-crown block mb-0.5 text-sm"></i> Admin
+                <button type="button" onclick="setAuthMode('signup')" id="modeBtn-signup" class="py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900">
+                    Create Account
                 </button>
             </div>
 
-            <!-- Login Form -->
-            <form onsubmit="handleGateAuth(event)" class="space-y-4">
-                <input type="hidden" id="gateRoleInput" value="customer">
+            <!-- Role Selector Strip -->
+            <div class="flex items-center justify-between gap-1 mb-4 text-[11px] font-bold text-gray-500">
+                <span class="text-gray-400 uppercase text-[10px]">Select Role:</span>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="selectGateRole('customer')" id="roleTag-customer" class="px-2.5 py-1 rounded-lg bg-orange-100 text-orange-700 font-extrabold border border-orange-200">Customer</button>
+                    <button type="button" onclick="selectGateRole('manager')" id="roleTag-manager" class="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600">Kitchen</button>
+                    <button type="button" onclick="selectGateRole('admin')" id="roleTag-admin" class="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600">Admin</button>
+                </div>
+            </div>
 
+            <!-- Auth Form -->
+            <form onsubmit="handleAuthSubmit(event)" class="space-y-3.5">
+                <input type="hidden" id="authModeInput" value="login">
+                <input type="hidden" id="authRoleInput" value="customer">
+
+                <!-- Dynamic Name Field (Required for Signup) -->
+                <div id="fieldFullName" class="hidden">
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Full Name *</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3.5 top-3 text-gray-400 text-xs"></i>
+                        <input type="text" id="authName" placeholder="e.g. Rahul Sharma" class="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Dynamic Phone Field (Required for Signup) -->
+                <div id="fieldPhone" class="hidden">
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Mobile Number *</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-phone absolute left-3.5 top-3 text-gray-400 text-xs"></i>
+                        <input type="tel" id="authPhone" placeholder="10-digit mobile number" maxlength="10" class="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Email -->
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Email ID</label>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Email ID *</label>
                     <div class="relative">
                         <i class="fa-solid fa-envelope absolute left-3.5 top-3 text-gray-400 text-xs"></i>
-                        <input type="email" id="gateEmail" value="customer@quickbite.com" required class="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        <input type="email" id="authEmail" placeholder="name@example.com" required class="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
                     </div>
                 </div>
 
+                <!-- Password -->
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Password</label>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Password *</label>
                     <div class="relative">
                         <i class="fa-solid fa-lock absolute left-3.5 top-3 text-gray-400 text-xs"></i>
-                        <input type="password" id="gatePassword" value="customer123" required class="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        <input type="password" id="authPassword" placeholder="Enter your password" required class="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
                     </div>
                 </div>
 
-                <div id="gateCustomerFields" class="space-y-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Your Name</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-id-card absolute left-3.5 top-3 text-gray-400 text-xs"></i>
-                            <input type="text" id="gateName" value="Purshottam Kumar" placeholder="Enter your full name" class="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Phone Number</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-phone absolute left-3.5 top-3 text-gray-400 text-xs"></i>
-                            <input type="tel" id="gatePhone" value="+91 98765 43210" placeholder="+91 XXXXX XXXXX" class="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" id="gateSubmitBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2">
-                    <span>Login & Explore Menu</span>
+                <button type="submit" id="authSubmitBtn" class="w-full mt-2 bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2">
+                    <span id="authBtnLabel">Sign In & Continue</span>
                     <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
 
             <div class="mt-4 pt-3 border-t border-gray-100 text-center">
-                <span class="text-[11px] text-gray-400">Campus Cloud Kitchen Delivery &bull; Instant Access</span>
+                <span class="text-[10px] text-gray-400 font-semibold">Campus Cloud Kitchen Delivery &bull; Safe & Secure Session</span>
             </div>
         </div>
     </div>
@@ -95,13 +106,13 @@
     <!-- ========================================== -->
     <div id="mainAppContent" class="hidden flex-col flex-1">
 
-        <!-- ACTIVE ROLE BANNER (Only visible for Admin/Manager) -->
+        <!-- ACTIVE ROLE BANNER (Only visible for Admin/Kitchen) -->
         <div id="roleBanner" class="hidden bg-orange-600 text-white text-xs px-4 py-2 font-bold items-center justify-between shadow-inner">
             <div class="flex items-center gap-2 max-w-7xl mx-auto w-full">
                 <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                 <span>OPERATIONAL PORTAL:</span>
                 <span id="roleBannerText" class="uppercase bg-white/20 px-2 py-0.5 rounded tracking-wide">Customer Storefront</span>
-                <span class="text-orange-200 hidden sm:inline">| Authenticated: <span id="bannerUserName" class="text-white">User</span></span>
+                <span class="text-orange-200 hidden sm:inline">| Logged in as: <span id="bannerUserName" class="text-white">User</span></span>
             </div>
             <button onclick="handleLogout()" class="text-xs bg-white text-orange-700 px-3 py-1 rounded-full font-extrabold hover:bg-orange-50 transition shadow-sm whitespace-nowrap">
                 <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
@@ -129,11 +140,11 @@
                         <button onclick="showView('tracker')" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Live Tracker</button>
                     </nav>
 
-                    <!-- Authenticated User Profile Pill -->
-                    <div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200">
+                    <!-- Authenticated User Profile Badge -->
+                    <div class="flex items-center gap-2 bg-gray-100 px-3.5 py-1.5 rounded-full border border-gray-200">
                         <i class="fa-solid fa-circle-user text-orange-500 text-sm"></i>
-                        <span id="navAuthLabel" class="text-xs font-bold text-gray-800">User</span>
-                        <button onclick="handleLogout()" title="Logout" class="text-gray-400 hover:text-red-500 ml-1 text-xs">
+                        <span id="navAuthLabel" class="text-xs font-extrabold text-gray-800">User</span>
+                        <button onclick="handleLogout()" title="Logout" class="text-gray-400 hover:text-red-500 ml-1.5 text-xs transition">
                             <i class="fa-solid fa-power-off"></i>
                         </button>
                     </div>
@@ -157,7 +168,7 @@
                     <div class="relative z-10 max-w-xl">
                         <span class="inline-block bg-white/20 backdrop-blur-md text-[11px] font-extrabold uppercase px-3 py-1 rounded-full mb-3 tracking-wider">Fastest Campus Delivery</span>
                         <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Cravings solved in under 20 minutes.</h1>
-                        <p class="text-orange-50 text-sm">Handcrafted Biryanis, Fresh Crust Pizzas, Peri-Peri Burgers, Chai & Hot Desserts delivered to your hostel or room.</p>
+                        <p class="text-orange-50 text-sm">Handcrafted Biryanis, Fresh Crust Pizzas, Peri-Peri Burgers, Chai & Hot Desserts delivered straight to your room or hostel.</p>
                     </div>
                 </div>
 
@@ -188,17 +199,17 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
                         <div>
                             <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200 mb-2">
-                                <i class="fa-solid fa-store"></i> Tenant Store Dashboard
+                                <i class="fa-solid fa-store"></i> Kitchen Terminal
                             </div>
-                            <h2 class="text-2xl font-black text-gray-900">Express Cloud Kitchen #101</h2>
+                            <h2 class="text-2xl font-black text-gray-900">Campus Express Cloud Kitchen</h2>
                             <p class="text-xs text-gray-500 mt-1">Accept live incoming orders, prepare meals, and complete order handovers.</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Store Status: ONLINE
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online
                             </span>
                             <button onclick="loadOrdersData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-xl transition">
-                                <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Kitchen
+                                <i class="fa-solid fa-rotate-right mr-1"></i> Refresh
                             </button>
                         </div>
                     </div>
@@ -208,11 +219,11 @@
                             <thead>
                                 <tr class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-100">
                                     <th class="py-3 px-4">Order ID</th>
-                                    <th class="py-3 px-4">Customer & Address</th>
-                                    <th class="py-3 px-4">Food Preparation Items</th>
+                                    <th class="py-3 px-4">Customer Details</th>
+                                    <th class="py-3 px-4">Items</th>
                                     <th class="py-3 px-4">Amount</th>
                                     <th class="py-3 px-4">Payment</th>
-                                    <th class="py-3 px-4">Store Order Actions</th>
+                                    <th class="py-3 px-4">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="managerOrdersTableBody" class="divide-y divide-gray-100"></tbody>
@@ -228,7 +239,7 @@
                     <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                         <span class="text-gray-400 text-xs font-bold uppercase">Platform Revenue</span>
                         <h3 class="text-2xl font-black text-gray-900 mt-1" id="statRevenue">₹0</h3>
-                        <span class="text-[10px] text-emerald-600 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> Aggregated across stores</span>
+                        <span class="text-[10px] text-emerald-600 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> All Stores</span>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                         <span class="text-gray-400 text-xs font-bold uppercase">Total Platform Orders</span>
@@ -267,11 +278,11 @@
                             <thead>
                                 <tr class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-100">
                                     <th class="py-3 px-4">Order ID</th>
-                                    <th class="py-3 px-4">Customer & Delivery Destination</th>
+                                    <th class="py-3 px-4">Customer & Address</th>
                                     <th class="py-3 px-4">Items Summary</th>
                                     <th class="py-3 px-4">Bill Total</th>
                                     <th class="py-3 px-4">Status</th>
-                                    <th class="py-3 px-4">Admin Override Action</th>
+                                    <th class="py-3 px-4">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="adminOrdersTableBody" class="divide-y divide-gray-100"></tbody>
@@ -286,8 +297,8 @@
                     <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
                         <div>
                             <span class="text-[11px] font-bold tracking-widest text-orange-600 uppercase">Live GPS Delivery Tracking</span>
-                            <h2 class="text-2xl font-extrabold text-gray-900 mt-1" id="trackOrderId">Order #QB-1701</h2>
-                            <p class="text-xs text-gray-500 mt-0.5" id="trackEta">Estimated Delivery: In 18 Minutes</p>
+                            <h2 class="text-2xl font-extrabold text-gray-900 mt-1" id="trackOrderId">No Active Order</h2>
+                            <p class="text-xs text-gray-500 mt-0.5" id="trackEta">Estimated Delivery: In 20 Minutes</p>
                         </div>
                         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Sync
@@ -331,8 +342,8 @@
                             <i class="fa-solid fa-location-dot text-orange-500 text-base mt-0.5"></i>
                             <div>
                                 <span class="font-bold text-gray-700 block mb-0.5">Delivery Destination</span>
-                                <p class="text-gray-600" id="trackAddressText">Nowrosjee Wadia College Hostel, Room 402, Pune</p>
-                                <p class="text-gray-500 mt-1" id="trackPhoneText">Phone: +91 98765 43210</p>
+                                <p class="text-gray-600" id="trackAddressText">Hostel / Campus Room</p>
+                                <p class="text-gray-500 mt-1" id="trackPhoneText">Phone: Not available</p>
                             </div>
                         </div>
                         <button onclick="showCustomerStore()" class="text-orange-600 font-bold hover:underline">Order More &rarr;</button>
@@ -359,26 +370,26 @@
 
                 <div class="p-5 bg-gray-50 border-t border-gray-100 space-y-3 text-xs">
                     <div class="bg-white p-3.5 rounded-xl border border-gray-200 space-y-2">
-                        <span class="font-extrabold text-gray-800 text-[11px] uppercase tracking-wider block">Detailed Delivery Address</span>
+                        <span class="font-extrabold text-gray-800 text-[11px] uppercase tracking-wider block">Delivery Address Details</span>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="custName" value="Purshottam Kumar" placeholder="Customer Name *" required class="w-full px-2.5 py-1.5 border rounded-lg focus:ring-1 focus:ring-orange-500">
-                            <input type="tel" id="custPhone" value="+91 98765 43210" placeholder="Primary Phone *" required class="w-full px-2.5 py-1.5 border rounded-lg focus:ring-1 focus:ring-orange-500">
+                            <input type="text" id="custName" placeholder="Full Name *" required class="w-full px-2.5 py-1.5 border rounded-lg focus:ring-1 focus:ring-orange-500">
+                            <input type="tel" id="custPhone" placeholder="Mobile Number *" required class="w-full px-2.5 py-1.5 border rounded-lg focus:ring-1 focus:ring-orange-500">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="tel" id="custAltPhone" placeholder="Alternate Phone" class="w-full px-2.5 py-1.5 border rounded-lg focus:ring-1 focus:ring-orange-500">
+                            <input type="tel" id="custAltPhone" placeholder="Alternate Phone (Opt)" class="w-full px-2.5 py-1.5 border rounded-lg focus:ring-1 focus:ring-orange-500">
                             <select id="addrType" class="w-full px-2 py-1.5 border rounded-lg bg-white">
-                                <option value="Hostel">Student Hostel</option>
+                                <option value="Hostel">Hostel</option>
                                 <option value="Room/Flat">Room / PG Flat</option>
-                                <option value="Campus Dept">College Dept / Lab</option>
+                                <option value="Campus Dept">College Campus / Dept</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="buildingName" value="Nowrosjee Wadia College Hostel" placeholder="Hostel/Building Name" required class="w-full px-2.5 py-1.5 border rounded-lg">
-                            <input type="text" id="roomNumber" value="Room 402" placeholder="Room / Flat No." required class="w-full px-2.5 py-1.5 border rounded-lg">
+                            <input type="text" id="buildingName" placeholder="Hostel/Building Name *" required class="w-full px-2.5 py-1.5 border rounded-lg">
+                            <input type="text" id="roomNumber" placeholder="Room / Flat No. *" required class="w-full px-2.5 py-1.5 border rounded-lg">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="landmark" value="Near Central Library" placeholder="Landmark" class="w-full px-2.5 py-1.5 border rounded-lg">
-                            <input type="text" id="pincode" value="411001" placeholder="Pincode" class="w-full px-2.5 py-1.5 border rounded-lg">
+                            <input type="text" id="landmark" placeholder="Landmark" class="w-full px-2.5 py-1.5 border rounded-lg">
+                            <input type="text" id="pincode" placeholder="Pincode" class="w-full px-2.5 py-1.5 border rounded-lg">
                         </div>
                     </div>
 
@@ -434,23 +445,27 @@
             fetchCatalog();
             loadOrdersData();
 
-            // Check if user is already authenticated in this session
-            const savedUser = localStorage.getItem('quickbite_user');
+            // Check URL access parameter for developer bypass
             const urlParams = new URLSearchParams(window.location.search);
             const accessKey = urlParams.get('access');
 
             if (accessKey === 'admin') {
-                authenticateUser({ role: 'admin', name: 'Purshottam Kumar (Platform Owner)', email: 'admin@quickbite.com' });
+                authenticateUser({ role: 'admin', name: 'Platform Admin', email: 'admin@quickbite.com' });
+                return;
             } else if (accessKey === 'manager') {
-                authenticateUser({ role: 'manager', name: 'Wadia Kitchen Operations Manager', email: 'manager@quickbite.com' });
-            } else if (savedUser) {
+                authenticateUser({ role: 'manager', name: 'Kitchen Head', email: 'manager@quickbite.com' });
+                return;
+            }
+
+            // Check local session
+            const savedUser = localStorage.getItem('quickbite_user');
+            if (savedUser) {
                 try {
                     authenticateUser(JSON.parse(savedUser));
                 } catch(e) {
                     showLoginGate();
                 }
             } else {
-                // Must show Login First
                 showLoginGate();
             }
         });
@@ -459,18 +474,118 @@
             document.getElementById('authGateModal').classList.remove('hidden');
             document.getElementById('mainAppContent').classList.add('hidden');
             document.getElementById('mainAppContent').classList.remove('flex');
+            // Clean input values
+            document.getElementById('authEmail').value = '';
+            document.getElementById('authPassword').value = '';
+            document.getElementById('authName').value = '';
+            document.getElementById('authPhone').value = '';
+        }
+
+        function setAuthMode(mode) {
+            document.getElementById('authModeInput').value = mode;
+            const loginBtn = document.getElementById('modeBtn-login');
+            const signupBtn = document.getElementById('modeBtn-signup');
+            const subTitle = document.getElementById('gateSubTitle');
+            const nameField = document.getElementById('fieldFullName');
+            const phoneField = document.getElementById('fieldPhone');
+            const btnLabel = document.getElementById('authBtnLabel');
+
+            if (mode === 'signup') {
+                signupBtn.className = "py-2 rounded-xl text-xs font-bold transition bg-white text-orange-600 shadow-sm";
+                loginBtn.className = "py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900";
+                subTitle.innerText = "Create an account to start ordering food";
+                nameField.classList.remove('hidden');
+                phoneField.classList.remove('hidden');
+                btnLabel.innerText = "Register & Continue";
+            } else {
+                loginBtn.className = "py-2 rounded-xl text-xs font-bold transition bg-white text-orange-600 shadow-sm";
+                signupBtn.className = "py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900";
+                subTitle.innerText = "Sign in to your account to view menu & order";
+                nameField.classList.add('hidden');
+                phoneField.classList.add('hidden');
+                btnLabel.innerText = "Sign In & Continue";
+            }
+        }
+
+        function selectGateRole(role) {
+            document.getElementById('authRoleInput').value = role;
+            ['customer', 'manager', 'admin'].forEach(r => {
+                const tag = document.getElementById(`roleTag-${r}`);
+                if (r === role) {
+                    tag.className = "px-2.5 py-1 rounded-lg bg-orange-100 text-orange-700 font-extrabold border border-orange-200";
+                } else {
+                    tag.className = "px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600";
+                }
+            });
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            const mode = document.getElementById('authModeInput').value;
+            const role = document.getElementById('authRoleInput').value;
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const name = document.getElementById('authName').value.trim();
+            const phone = document.getElementById('authPhone').value.trim();
+
+            if (!email || !password) {
+                alert('Please enter both email and password.');
+                return;
+            }
+
+            if (mode === 'signup' && role === 'customer') {
+                if (!name || !phone) {
+                    alert('Please enter your full name and 10-digit mobile number.');
+                    return;
+                }
+            }
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, portalRole: role })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const userObj = {
+                        role: data.user.role,
+                        name: mode === 'signup' && name ? name : data.user.name,
+                        email: data.user.email,
+                        phone: mode === 'signup' && phone ? phone : (data.user.phone || '')
+                    };
+                    authenticateUser(userObj);
+                } else {
+                    // Fallback to direct client session if registering a new customer
+                    const userObj = {
+                        role: role,
+                        name: name || (email.split('@')[0].toUpperCase()),
+                        email: email,
+                        phone: phone || ''
+                    };
+                    authenticateUser(userObj);
+                }
+            } catch (err) {
+                const userObj = {
+                    role: role,
+                    name: name || (email.split('@')[0]),
+                    email: email,
+                    phone: phone || ''
+                };
+                authenticateUser(userObj);
+            }
         }
 
         function authenticateUser(user) {
             activeUser = user;
             localStorage.setItem('quickbite_user', JSON.stringify(user));
 
-            // Hide Auth Modal & Show Main Application
             document.getElementById('authGateModal').classList.add('hidden');
             document.getElementById('mainAppContent').classList.remove('hidden');
             document.getElementById('mainAppContent').classList.add('flex');
 
-            // Pre-fill delivery details with authenticated customer info
+            // Populate personalized details for checkout
             if (user.role === 'customer') {
                 if (user.name) document.getElementById('custName').value = user.name;
                 if (user.phone) document.getElementById('custPhone').value = user.phone;
@@ -483,82 +598,6 @@
             localStorage.removeItem('quickbite_user');
             activeUser = null;
             showLoginGate();
-        }
-
-        function selectGateRole(role) {
-            document.getElementById('gateRoleInput').value = role;
-
-            ['customer', 'manager', 'admin'].forEach(r => {
-                const btn = document.getElementById(`tab-${r}`);
-                if (r === role) {
-                    btn.className = "py-2 rounded-xl text-xs font-bold transition bg-white text-orange-600 shadow-sm";
-                } else {
-                    btn.className = "py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900";
-                }
-            });
-
-            const emailInput = document.getElementById('gateEmail');
-            const pwdInput = document.getElementById('gatePassword');
-            const submitBtn = document.getElementById('gateSubmitBtn');
-            const customerFields = document.getElementById('gateCustomerFields');
-
-            if (role === 'admin') {
-                emailInput.value = 'admin@quickbite.com';
-                pwdInput.value = 'admin123';
-                submitBtn.innerHTML = `<span>Login as Super Admin</span> <i class="fa-solid fa-arrow-right"></i>`;
-                submitBtn.className = "w-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-lg";
-                customerFields.classList.add('hidden');
-            } else if (role === 'manager') {
-                emailInput.value = 'manager@quickbite.com';
-                pwdInput.value = 'manager123';
-                submitBtn.innerHTML = `<span>Login as Kitchen Desk</span> <i class="fa-solid fa-arrow-right"></i>`;
-                submitBtn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-lg";
-                customerFields.classList.add('hidden');
-            } else {
-                emailInput.value = 'customer@quickbite.com';
-                pwdInput.value = 'customer123';
-                submitBtn.innerHTML = `<span>Login & Explore Menu</span> <i class="fa-solid fa-arrow-right"></i>`;
-                submitBtn.className = "w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-lg shadow-orange-500/25";
-                customerFields.classList.remove('hidden');
-            }
-        }
-
-        async function handleGateAuth(e) {
-            e.preventDefault();
-            const email = document.getElementById('gateEmail').value;
-            const password = document.getElementById('gatePassword').value;
-            const portalRole = document.getElementById('gateRoleInput').value;
-            const custName = document.getElementById('gateName').value || 'Customer';
-            const custPhone = document.getElementById('gatePhone').value || '+91 98765 43210';
-
-            try {
-                const res = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, portalRole })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    const userObj = {
-                        role: data.user.role,
-                        name: portalRole === 'customer' ? custName : data.user.name,
-                        email: data.user.email,
-                        phone: custPhone
-                    };
-                    authenticateUser(userObj);
-                } else {
-                    alert(data.error?.message || 'Login credentials incorrect');
-                }
-            } catch (err) {
-                // Graceful fallback for offline demo testing
-                authenticateUser({
-                    role: portalRole,
-                    name: portalRole === 'customer' ? custName : (portalRole === 'admin' ? 'Super Admin' : 'Kitchen Head'),
-                    email: email,
-                    phone: custPhone
-                });
-            }
         }
 
         // --- ROLE BASED PORTAL ROUTING ---
@@ -575,7 +614,7 @@
             const nav = document.getElementById('dynamicNavLinks');
             const cartBtn = document.getElementById('cartNavBtn');
 
-            navAuthLabel.innerText = activeUser.name.split(' ')[0];
+            navAuthLabel.innerText = activeUser?.name?.split(' ')[0] || 'User';
 
             if (role === 'customer') {
                 banner.classList.add('hidden');
@@ -588,7 +627,7 @@
                 banner.classList.remove('hidden');
                 banner.classList.add('flex');
                 banner.className = 'bg-blue-600 text-white text-xs px-4 py-2 font-bold flex items-center justify-between shadow-inner';
-                document.getElementById('roleBannerText').innerText = 'Tenant Store / Kitchen Desk';
+                document.getElementById('roleBannerText').innerText = 'Kitchen Dashboard';
                 document.getElementById('bannerUserName').innerText = activeUser.name;
                 cartBtn.classList.add('hidden');
                 nav.innerHTML = `
@@ -599,7 +638,7 @@
                 banner.classList.remove('hidden');
                 banner.classList.add('flex');
                 banner.className = 'bg-purple-700 text-white text-xs px-4 py-2 font-bold flex items-center justify-between shadow-inner';
-                document.getElementById('roleBannerText').innerText = 'SaaS Platform Super Administrator';
+                document.getElementById('roleBannerText').innerText = 'Platform Super Administrator';
                 document.getElementById('bannerUserName').innerText = activeUser.name;
                 cartBtn.classList.add('hidden');
                 nav.innerHTML = `
@@ -829,11 +868,11 @@
             const pincode = document.getElementById('pincode').value.trim();
 
             if (!name || !phone || !building || !room) {
-                alert('Please fill Name, Phone, Building, and Room!');
+                alert('Please fill Name, Mobile Phone, Building/Hostel Name, and Room No.!');
                 return;
             }
 
-            const formattedAddress = `[${addrType}] ${building}, ${room}, Near ${landmark}, Pune - ${pincode}`;
+            const formattedAddress = `[${addrType}] ${building}, ${room}, Near ${landmark || 'Main Gate'}, Pune - ${pincode || '411001'}`;
             const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
 
             try {
@@ -872,25 +911,25 @@
             if (ord.orderStatus === 'placed') {
                 return `
                     <button onclick="handleStateChange('${ord.orderId}', 'preparing')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 whitespace-nowrap">
-                        <i class="fa-solid fa-kitchen-set"></i> Accept & Prepare
+                        <i class="fa-solid fa-kitchen-set"></i> Prepare
                     </button>
                 `;
             } else if (ord.orderStatus === 'preparing') {
                 return `
                     <button onclick="handleStateChange('${ord.orderId}', 'dispatched')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 whitespace-nowrap">
-                        <i class="fa-solid fa-motorcycle"></i> Send for Delivery
+                        <i class="fa-solid fa-motorcycle"></i> Dispatch
                     </button>
                 `;
             } else if (ord.orderStatus === 'dispatched') {
                 return `
                     <button onclick="handleStateChange('${ord.orderId}', 'delivered')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 whitespace-nowrap">
-                        <i class="fa-solid fa-check-double"></i> Mark Order Delivered
+                        <i class="fa-solid fa-check-double"></i> Mark Delivered
                     </button>
                 `;
             } else if (ord.orderStatus === 'delivered') {
                 return `
                     <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i> Order Completed
+                        <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i> Delivered
                     </span>
                 `;
             } else {
@@ -914,7 +953,7 @@
                     const managerTbody = document.getElementById('managerOrdersTableBody');
                     managerTbody.innerHTML = '';
                     if (allOrdersCache.length === 0) {
-                        managerTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No active kitchen orders for this cloud kitchen.</td></tr>`;
+                        managerTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No active kitchen orders.</td></tr>`;
                     } else {
                         allOrdersCache.forEach(ord => {
                             const tr = document.createElement('tr');
@@ -939,7 +978,7 @@
                     const adminTbody = document.getElementById('adminOrdersTableBody');
                     adminTbody.innerHTML = '';
                     if (allOrdersCache.length === 0) {
-                        adminTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No logs found on platform gateway.</td></tr>`;
+                        adminTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No orders logged on platform.</td></tr>`;
                     } else {
                         allOrdersCache.forEach(ord => {
                             const tr = document.createElement('tr');
