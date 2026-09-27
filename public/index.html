@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBite | Campus Express Food Delivery</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- ACTIVE ROLE STATUS STRIP (Hidden for public/customers) -->
+    <div id="roleBanner" class="hidden bg-orange-600 text-white text-xs px-4 py-2 font-bold items-center justify-between shadow-inner">
+        <div class="flex items-center gap-2 max-w-7xl mx-auto w-full">
+            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            <span>CURRENT OPERATIONAL PORTAL:</span>
+            <span id="roleBannerText" class="uppercase bg-white/20 px-2 py-0.5 rounded tracking-wide">Customer Storefront</span>
+            <span class="text-orange-200 hidden sm:inline">| Authenticated as: <span id="bannerUserName" class="text-white">Purshottam Kumar</span></span>
+        </div>
+        <button onclick="openLoginModal()" class="text-xs bg-white text-orange-700 px-3 py-1 rounded-full font-extrabold hover:bg-orange-50 transition shadow-sm whitespace-nowrap">
+            <i class="fa-solid fa-arrow-right-arrow-left mr-1"></i> Switch Role / Login
+        </button>
+    </div>
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo (Triple-click activates hidden Admin Portal) -->
+            <div class="flex items-center gap-3 cursor-pointer select-none" onclick="handleLogoClick()">
+                <div class="w-10 h-10 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-orange-500/30">
+                    <i class="fa-solid fa-utensils text-lg"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight text-gray-900">Quick<span class="text-orange-500">Bite</span></span>
+                    <span class="text-[10px] bg-orange-100 text-orange-700 font-bold px-1.5 py-0.5 rounded ml-1">Express</span>
+                </div>
+            </div>
+
+            <!-- Role-Specific Navigation Links -->
+            <div class="flex items-center gap-3">
+                <nav id="dynamicNavLinks" class="flex items-center gap-1 bg-gray-100 p-1 rounded-full text-xs font-semibold">
+                    <button onclick="showCustomerStore()" class="px-4 py-1.5 rounded-full bg-white text-orange-600 shadow-sm font-bold">Menu</button>
+                    <button onclick="showView('tracker')" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Live Tracker</button>
+                </nav>
+
+                <!-- Switch Role Button (Hidden for public/customers) -->
+                <button id="roleSwitchBtn" onclick="openLoginModal()" class="hidden flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold px-3.5 py-2 rounded-full transition border border-gray-200 shadow-sm">
+                    <i class="fa-solid fa-user-shield text-orange-500 text-sm"></i>
+                    <span id="navAuthLabel">Portal Access</span>
+                </button>
+
+                <!-- Cart Basket Button -->
+                <button id="cartNavBtn" onclick="toggleCartDrawer(true)" class="relative bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-full transition shadow-md shadow-orange-500/20">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span id="cartCountBadge" class="absolute -top-1 -right-1 bg-red-600 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ==================== 1. CUSTOMER PORTAL ==================== -->
+        <div id="portal-customer" class="space-y-6">
+            <!-- Hero Banner -->
+            <div class="rounded-3xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 p-8 sm:p-10 text-white shadow-xl shadow-orange-500/10 relative overflow-hidden">
+                <div class="relative z-10 max-w-xl">
+                    <span class="inline-block bg-white/20 backdrop-blur-md text-[11px] font-extrabold uppercase px-3 py-1 rounded-full mb-3 tracking-wider">Fastest Campus Delivery</span>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Cravings solved in under 20 minutes.</h1>
+                    <p class="text-orange-50 text-sm">Handcrafted Biryanis, Fresh Crust Pizzas, Peri-Peri Burgers, Chai & Hot Desserts delivered to your hostel or room.</p>
+                </div>
+            </div>
+
+            <!-- Categories Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-gray-200">
+                <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none" id="categoryBar">
+                    <button onclick="setCategoryFilter('all')" data-cat="all" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-orange-500 text-white shadow-sm">All Dishes</button>
+                    <button onclick="setCategoryFilter('biryani')" data-cat="biryani" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Biryani & Bowls</button>
+                    <button onclick="setCategoryFilter('pizzas')" data-cat="pizzas" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Pizzas</button>
+                    <button onclick="setCategoryFilter('burgers')" data-cat="burgers" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Burgers</button>
+                    <button onclick="setCategoryFilter('chai')" data-cat="chai" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Chai & Drinks</button>
+                    <button onclick="setCategoryFilter('desserts')" data-cat="desserts" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Sides & Desserts</button>
+                </div>
+
+                <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-gray-100 px-3 py-2 rounded-xl cursor-pointer select-none">
+                    <input type="checkbox" id="vegFilterToggle" onchange="toggleVegOnly()" class="accent-emerald-600 rounded w-4 h-4">
+                    <span>PURE VEG ONLY</span>
+                </label>
+            </div>
+
+            <!-- Products Catalog Grid -->
+            <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+
+        <!-- ==================== 2. RESTAURANT / KITCHEN MANAGER PORTAL ==================== -->
+        <div id="portal-manager" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200 mb-2">
+                            <i class="fa-solid fa-store"></i> Tenant Store Dashboard
+                        </div>
+                        <h2 class="text-2xl font-black text-gray-900">Express Cloud Kitchen #101</h2>
+                        <p class="text-xs text-gray-500 mt-1">Accept live incoming orders, prepare meals, and complete order handovers.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Store Status: ONLINE
+                        </span>
+                        <button onclick="loadOrdersData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-xl transition">
+                            <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Kitchen
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-100">
+                                <th class="py-3 px-4">Order ID</th>
+                                <th class="py-3 px-4">Customer & Address</th>
+                                <th class="py-3 px-4">Food Preparation Items</th>
+                                <th class="py-3 px-4">Amount</th>
+                                <th class="py-3 px-4">Payment</th>
+                                <th class="py-3 px-4">Store Order Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="managerOrdersTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 3. SAAS SUPER ADMIN PORTAL ==================== -->
+        <div id="portal-admin" class="hidden space-y-6">
+            <!-- SaaS Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                    <span class="text-gray-400 text-xs font-bold uppercase">Platform Revenue</span>
+                    <h3 class="text-2xl font-black text-gray-900 mt-1" id="statRevenue">₹0</h3>
+                    <span class="text-[10px] text-emerald-600 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> Aggregated across stores</span>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                    <span class="text-gray-400 text-xs font-bold uppercase">Total Platform Orders</span>
+                    <h3 class="text-2xl font-black text-gray-900 mt-1" id="statOrdersCount">0</h3>
+                    <span class="text-[10px] text-blue-600 font-bold">Processed today</span>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                    <span class="text-gray-400 text-xs font-bold uppercase">Registered Stores</span>
+                    <h3 class="text-2xl font-black text-purple-700 mt-1">2 Kitchens</h3>
+                    <span class="text-[10px] text-purple-600 font-bold">Wadia Central, Deccan Express</span>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                    <span class="text-gray-400 text-xs font-bold uppercase">Platform Engine</span>
+                    <h3 class="text-2xl font-black text-emerald-600 mt-1">Decoupled</h3>
+                    <span class="text-[10px] text-gray-500 font-medium">RBAC & Error Barrier Active</span>
+                </div>
+            </div>
+
+            <!-- Global Oversight -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200 mb-2">
+                            <i class="fa-solid fa-crown"></i> Platform Super Administrator
+                        </div>
+                        <h2 class="text-2xl font-black text-gray-900">Multi-Tenant Oversight & Audit Logs</h2>
+                        <p class="text-xs text-gray-500 mt-1">Real-time cross-kitchen order transactions and administrative override.</p>
+                    </div>
+                    <button onclick="loadOrdersData()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">
+                        <i class="fa-solid fa-sync mr-1"></i> Refresh System
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-100">
+                                <th class="py-3 px-4">Order ID</th>
+                                <th class="py-3 px-4">Customer & Delivery Destination</th>
+                                <th class="py-3 px-4">Items Summary</th>
+                                <th class="py-3 px-4">Bill Total</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4">Admin Override Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminOrdersTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 4. LIVE TRACKER VIEW ==================== -->
+        <div id="view-tracker" class="hidden max-w-3xl mx-auto py-8 space-y-6">
+            <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
+                <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+                    <div>
+                        <span class="text-[11px] font-bold tracking-widest text-orange-600 uppercase">Live GPS Delivery Tracking</span>
+                        <h2 class="text-2xl font-extrabold text-gray-900 mt-1" id="trackOrderId">Order #QB-1701</h2>
+                        <p class="text-xs text-gray-500 mt-0.5" id="trackEta">Estimated Delivery: In 18 Minutes</p>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Sync
+                    </span>
+                </div>
+
+                <div class="relative py-4">
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
+                    <div id="trackerProgressBar" class="absolute top-1/2 left-0 w-1/4 h-1 bg-orange-500 -translate-y-1/2 z-0 transition-all duration-500"></div>
+
+                    <div class="relative z-10 grid grid-cols-4 gap-2 text-center text-xs font-semibold">
+                        <div id="step-placed" class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-orange-500 text-white shadow-md shadow-orange-500/30 mb-2 transition">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <span class="text-gray-900 font-bold">Placed</span>
+                        </div>
+                        <div id="step-preparing" class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition">
+                                <i class="fa-solid fa-kitchen-set"></i>
+                            </div>
+                            <span class="text-gray-500">Preparing</span>
+                        </div>
+                        <div id="step-dispatched" class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition">
+                                <i class="fa-solid fa-motorcycle"></i>
+                            </div>
+                            <span class="text-gray-500">Dispatched</span>
+                        </div>
+                        <div id="step-delivered" class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition">
+                                <i class="fa-solid fa-house-chimney"></i>
+                            </div>
+                            <span class="text-gray-500">Delivered</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-4 rounded-2xl bg-amber-50/70 border border-amber-100 flex items-start justify-between text-xs">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-location-dot text-orange-500 text-base mt-0.5"></i>
+                        <div>
+                            <span class="font-bold text-gray-700 block mb-0.5">Delivery Destination</span>
+                            <p class="text-gray-600" id="trackAddressText">Nowrosjee Wadia College Hostel, Room 402, Pune</p>
+                            <p class="text-gray-500 mt-1" id="trackPhoneText">Phone: +91 98765 43210</p>
+                        </div>
+                    </div>
+                    <button onclick="showCustomerStore()" class="text-orange-600 font-bold hover:underline">Order More &rarr;</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- BASKET SLIDE-OVER DRAWER -->
+    <div id="cartDrawer" class="hidden fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-sm">
+        <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-basket-shopping text-orange-500 text-lg"></i>
+                        <h3 class="text-lg font-extrabold text-gray-900">Your Basket</h3>
+                    </div>
+                    <button onclick="toggleCartDrawer(false)" class="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-5 space-y-3" id="cartItemList"></div>
+
+                <div class="p-5 bg-gray-50 border-t border-gray-100 space-y-3 text-xs">
+                    <div class="bg-white p-3.5 rounded-xl border border-gray-200 space-y-2">
+                        <span class="font-extrabold text-gray-800 text-[11px] uppercase tracking-wider block">Detailed Delivery Address</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="custName" value="Purshottam Kumar" placeholder="Customer Name *" required class="w-full px-2.5 py-1.5 border rounded-lg focus:ring-1 focus:ring-orange-500">
+                            <input type="tel" id="custPhone" value="+91 98765 43210" placeholder="Primary Phone *" required class="w-full px-2.5 py-1.5 border rounded-lg focus:ring-1 focus:ring-orange-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="tel" id="custAltPhone" placeholder="Alternate Phone" class="w-full px-2.5 py-1.5 border rounded-lg focus:ring-1 focus:ring-orange-500">
+                            <select id="addrType" class="w-full px-2 py-1.5 border rounded-lg bg-white">
+                                <option value="Hostel">Student Hostel</option>
+                                <option value="Room/Flat">Room / PG Flat</option>
+                                <option value="Campus Dept">College Dept / Lab</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="buildingName" value="Nowrosjee Wadia College Hostel" placeholder="Hostel/Building Name" required class="w-full px-2.5 py-1.5 border rounded-lg">
+                            <input type="text" id="roomNumber" value="Room 402" placeholder="Room / Flat No." required class="w-full px-2.5 py-1.5 border rounded-lg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="landmark" value="Near Central Library" placeholder="Landmark" class="w-full px-2.5 py-1.5 border rounded-lg">
+                            <input type="text" id="pincode" value="411001" placeholder="Pincode" class="w-full px-2.5 py-1.5 border rounded-lg">
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5 text-gray-600 pt-1">
+                        <div class="flex justify-between"><span>Item Subtotal</span><span class="font-bold text-gray-800" id="billSubtotal">₹0</span></div>
+                        <div class="flex justify-between"><span>Delivery Fee</span><span class="text-emerald-600 font-bold">FREE</span></div>
+                        <div class="flex justify-between"><span>Taxes & GST (5%)</span><span class="font-bold text-gray-800" id="billGst">₹0</span></div>
+                        <div class="flex justify-between text-base font-extrabold text-gray-900 pt-2 border-t border-gray-200">
+                            <span>To Pay</span><span class="text-orange-600" id="billTotal">₹0</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <label class="flex items-center justify-center gap-1.5 p-2 border-2 border-orange-500 bg-orange-50/50 rounded-xl cursor-pointer text-xs font-bold text-orange-700">
+                            <input type="radio" name="payMethod" value="UPI" checked class="accent-orange-500">
+                            <i class="fa-solid fa-qrcode"></i> UPI / QR
+                        </label>
+                        <label class="flex items-center justify-center gap-1.5 p-2 border border-gray-200 rounded-xl cursor-pointer text-xs font-bold text-gray-700">
+                            <input type="radio" name="payMethod" value="COD" class="accent-orange-500">
+                            Cash on Delivery
+                        </label>
+                    </div>
+
+                    <button onclick="placeCustomerOrder()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition shadow-lg shadow-orange-500/30 text-sm">
+                        Place Order Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOMIZE DISH MODAL -->
+    <div id="customizeModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeCustomizeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
+            <div id="customModalContent"></div>
+        </div>
+    </div>
+
+    <!-- MULTI-ROLE LOGIN MODAL -->
+    <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
+            
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-black text-gray-900">Select Login Portal</h2>
+                <p class="text-xs text-gray-500 mt-1">Switch between Customer, Restaurant Store Manager & Platform Owner</p>
+            </div>
+
+            <!-- Role Selector Visual Cards -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div onclick="selectRoleTab('customer')" id="card-customer" class="cursor-pointer border-2 border-orange-500 bg-orange-50 p-3 rounded-2xl text-center transition">
+                    <div class="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center mx-auto mb-1 text-sm"><i class="fa-solid fa-user"></i></div>
+                    <span class="font-extrabold text-xs block text-gray-900">Customer</span>
+                    <span class="text-[10px] text-gray-500">Order Food</span>
+                </div>
+
+                <div onclick="selectRoleTab('manager')" id="card-manager" class="cursor-pointer border-2 border-gray-200 hover:border-blue-400 p-3 rounded-2xl text-center transition">
+                    <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center mx-auto mb-1 text-sm"><i class="fa-solid fa-store"></i></div>
+                    <span class="font-extrabold text-xs block text-gray-900">Kitchen</span>
+                    <span class="text-[10px] text-gray-500">Store Manager</span>
+                </div>
+
+                <div onclick="selectRoleTab('admin')" id="card-admin" class="cursor-pointer border-2 border-gray-200 hover:border-purple-400 p-3 rounded-2xl text-center transition">
+                    <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center mx-auto mb-1 text-sm"><i class="fa-solid fa-crown"></i></div>
+                    <span class="font-extrabold text-xs block text-gray-900">Platform</span>
+                    <span class="text-[10px] text-gray-500">Super Admin</span>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form onsubmit="handleAuthLogin(event)" class="space-y-4">
+                <input type="hidden" id="authPortalRole" value="customer">
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Email ID</label>
+                    <input type="email" id="authEmail" value="customer@quickbite.com" required class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-orange-500">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Password</label>
+                    <input type="password" id="authPassword" value="customer123" required class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-orange-500">
+                </div>
+
+                <button type="submit" id="loginSubmitBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md shadow-orange-500/20">
+                    Switch to Customer Portal
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION CORE -->
+    <script>
+        let catalog = [];
+        let cart = [];
+        let currentFilter = 'all';
+        let vegOnly = false;
+        let activeUser = { role: 'customer', name: 'Purshottam Kumar' };
+        let activeCustomizingItem = null;
+        let selectedVariantExtra = 0;
+        let selectedVariantName = 'Regular';
+        let allOrdersCache = [];
+        let logoClickCount = 0;
+        let logoClickTimer = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchCatalog();
+            loadOrdersData();
+
+            // Default: Public Link is CLEAN CUSTOMER STORE
+            const urlParams = new URLSearchParams(window.location.search);
+            const accessKey = urlParams.get('access');
+
+            if (accessKey === 'admin') {
+                activeUser = { role: 'admin', name: 'Purshottam Kumar (Platform Owner)' };
+                applyRoleUI('admin');
+                document.getElementById('roleBanner').classList.remove('hidden');
+                document.getElementById('roleBanner').classList.add('flex');
+                document.getElementById('roleSwitchBtn').classList.remove('hidden');
+            } else if (accessKey === 'manager') {
+                activeUser = { role: 'manager', name: 'Wadia Kitchen Operations Manager' };
+                applyRoleUI('manager');
+                document.getElementById('roleBanner').classList.remove('hidden');
+                document.getElementById('roleBanner').classList.add('flex');
+                document.getElementById('roleSwitchBtn').classList.remove('hidden');
+            } else {
+                // Regular Shared User: Show ONLY Customer Storefront
+                applyRoleUI('customer');
+                document.getElementById('roleBanner').classList.add('hidden');
+                document.getElementById('roleSwitchBtn').classList.add('hidden');
+            }
+        });
+
+        // Triple click secret trigger for Admin
+        function handleLogoClick() {
+            logoClickCount++;
+            clearTimeout(logoClickTimer);
+            logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1000);
+
+            if (logoClickCount === 3) {
+                logoClickCount = 0;
+                document.getElementById('roleSwitchBtn').classList.remove('hidden');
+                openLoginModal();
+            }
+        }
+
+        // --- ROLE BASED PORTAL ROUTING ---
+        function applyRoleUI(role) {
+            ['customer', 'manager', 'admin'].forEach(r => {
+                document.getElementById(`portal-${r}`).classList.add('hidden');
+            });
+            document.getElementById('view-tracker').classList.add('hidden');
+
+            document.getElementById(`portal-${role}`).classList.remove('hidden');
+
+            const roleColors = {
+                customer: 'bg-orange-600',
+                manager: 'bg-blue-600',
+                admin: 'bg-purple-700'
+            };
+            const roleLabels = {
+                customer: 'Customer Storefront Portal',
+                manager: 'Tenant Store / Kitchen Operations Desk',
+                admin: 'SaaS Platform Super Administrator Portal'
+            };
+
+            const banner = document.getElementById('roleBanner');
+            banner.className = `${roleColors[role]} text-white text-xs px-4 py-2 font-bold flex items-center justify-between shadow-inner transition-colors duration-300`;
+            document.getElementById('roleBannerText').innerText = roleLabels[role];
+            document.getElementById('bannerUserName').innerText = activeUser.name;
+            document.getElementById('navAuthLabel').innerText = `${activeUser.name.split(' ')[0]} (${role.toUpperCase()})`;
+
+            const nav = document.getElementById('dynamicNavLinks');
+            const cartBtn = document.getElementById('cartNavBtn');
+
+            if (role === 'customer') {
+                cartBtn.classList.remove('hidden');
+                nav.innerHTML = `
+                    <button onclick="showCustomerStore()" class="px-4 py-1.5 rounded-full bg-white text-orange-600 shadow-sm font-bold">Menu</button>
+                    <button onclick="showView('tracker')" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Live Tracker</button>
+                `;
+            } else if (role === 'manager') {
+                cartBtn.classList.add('hidden');
+                nav.innerHTML = `
+                    <button onclick="applyRoleUI('manager')" class="px-4 py-1.5 rounded-full bg-white text-blue-600 shadow-sm font-bold"><i class="fa-solid fa-store mr-1"></i>Kitchen Queue</button>
+                    <button onclick="showCustomerStore()" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Storefront Preview</button>
+                `;
+            } else if (role === 'admin') {
+                cartBtn.classList.add('hidden');
+                nav.innerHTML = `
+                    <button onclick="applyRoleUI('admin')" class="px-4 py-1.5 rounded-full bg-white text-purple-600 shadow-sm font-bold"><i class="fa-solid fa-chart-pie mr-1"></i>Platform Overview</button>
+                    <button onclick="applyRoleUI('manager')" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Kitchen Terminal</button>
+                    <button onclick="showCustomerStore()" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Storefront View</button>
+                `;
+            }
+        }
+
+        function showCustomerStore() {
+            ['customer', 'manager', 'admin'].forEach(r => document.getElementById(`portal-${r}`).classList.add('hidden'));
+            document.getElementById('view-tracker').classList.add('hidden');
+            document.getElementById('portal-customer').classList.remove('hidden');
+        }
+
+        function showView(view) {
+            ['customer', 'manager', 'admin'].forEach(r => document.getElementById(`portal-${r}`).classList.add('hidden'));
+            if (view === 'tracker') {
+                document.getElementById('view-tracker').classList.remove('hidden');
+            } else {
+                showCustomerStore();
+            }
+        }
+
+        // --- CATALOG FETCH & DISPLAY ---
+        async function fetchCatalog() {
+            try {
+                const res = await fetch(`/api/menu?category=${currentFilter}&vegOnly=${vegOnly}`);
+                const data = await res.json();
+                if (data.success) {
+                    catalog = data.data;
+                    renderCatalog();
+                }
+            } catch (err) {
+                console.error("Catalog API offline:", err);
+            }
+        }
+
+        function renderCatalog() {
+            const grid = document.getElementById('catalogGrid');
+            grid.innerHTML = '';
+
+            catalog.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between";
+                card.innerHTML = `
+                    <div class="relative h-48 overflow-hidden bg-gray-100">
+                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                        <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-md p-1.5 rounded-lg border border-gray-200">
+                            <span class="w-2.5 h-2.5 rounded-full inline-block ${item.isVeg ? 'bg-emerald-600' : 'bg-red-600'}"></span>
+                        </span>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-extrabold text-gray-900 text-base mb-1">${item.name}</h3>
+                            <p class="text-gray-500 text-xs line-clamp-2">Fresh multi-cuisine campus special prepared hot upon order confirmation.</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                            <span class="text-lg font-black text-gray-900">₹${item.price}</span>
+                            <button onclick="openCustomizeModal(${item.itemId})" class="bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold px-3.5 py-1.5 rounded-xl text-xs transition">
+                                Customize & Add +
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- CUSTOMIZE DISH MODAL (DISH-SPECIFIC SIZING & ADD-ONS) ---
+        function openCustomizeModal(itemId) {
+            const item = catalog.find(i => i.itemId === itemId);
+            if (!item) return;
+            activeCustomizingItem = item;
+            selectedVariantExtra = 0;
+            let portionHTML = '';
+
+            if (item.category === 'chai') {
+                selectedVariantName = 'Single Kulhad';
+                portionHTML = `
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <button type="button" onclick="selectVariant(0, 'Single Kulhad')" id="var-0" class="var-btn p-2.5 border-2 border-orange-500 bg-orange-50 rounded-xl font-bold text-orange-700 text-center">Single Kulhad<br><span class="text-[10px] font-normal">+₹0</span></button>
+                        <button type="button" onclick="selectVariant(40, 'Flask (Serves 2-3)')" id="var-40" class="var-btn p-2.5 border border-gray-200 rounded-xl font-bold text-gray-700 text-center">Flask (2-3 cups)<br><span class="text-[10px] font-normal">+₹40</span></button>
+                    </div>
+                `;
+            } else if (item.category === 'desserts') {
+                selectedVariantName = 'Single Portion';
+                portionHTML = `
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <button type="button" onclick="selectVariant(0, 'Single Portion')" id="var-0" class="var-btn p-2.5 border-2 border-orange-500 bg-orange-50 rounded-xl font-bold text-orange-700 text-center">Single Cake<br><span class="text-[10px] font-normal">+₹0</span></button>
+                        <button type="button" onclick="selectVariant(80, 'Twin Pack (2 pcs)')" id="var-80" class="var-btn p-2.5 border border-gray-200 rounded-xl font-bold text-gray-700 text-center">Twin Pack (2 pcs)<br><span class="text-[10px] font-normal">+₹80</span></button>
+                    </div>
+                `;
+            } else {
+                selectedVariantName = 'Regular';
+                portionHTML = `
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <button type="button" onclick="selectVariant(0, 'Regular')" id="var-0" class="var-btn p-2.5 border-2 border-orange-500 bg-orange-50 rounded-xl font-bold text-orange-700 text-center">Regular<br><span class="text-[10px] font-normal">+₹0</span></button>
+                        <button type="button" onclick="selectVariant(80, 'Medium / Full')" id="var-80" class="var-btn p-2.5 border border-gray-200 rounded-xl font-bold text-gray-700 text-center">Medium<br><span class="text-[10px] font-normal">+₹80</span></button>
+                        <button type="button" onclick="selectVariant(150, 'Jumbo / Family')" id="var-150" class="var-btn p-2.5 border border-gray-200 rounded-xl font-bold text-gray-700 text-center">Jumbo<br><span class="text-[10px] font-normal">+₹150</span></button>
+                    </div>
+                `;
+            }
+
+            let addonsHTML = '';
+            if (item.addons && item.addons.length > 0) {
+                addonsHTML = item.addons.map((add) => `
+                    <label class="flex items-center justify-between p-2.5 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                        <span class="text-gray-800 font-medium">${add.name}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-orange-600">+₹${add.price}</span>
+                            <input type="checkbox" data-name="${add.name}" value="${add.price}" class="dynamic-addon-check accent-orange-500 w-4 h-4">
+                        </div>
+                    </label>
+                `).join('');
+            } else {
+                addonsHTML = `<p class="text-gray-400 text-xs italic">No additional add-ons for this item.</p>`;
+            }
+
+            const content = document.getElementById('customModalContent');
+            content.innerHTML = `
+                <div class="text-left">
+                    <span class="text-[10px] font-bold uppercase tracking-wider ${item.isVeg ? 'text-emerald-600' : 'text-red-600'}">${item.isVeg ? 'Pure Veg' : 'Non-Veg'}</span>
+                    <h3 class="text-xl font-extrabold text-gray-900 mt-0.5">${item.name}</h3>
+                    <p class="text-xs text-gray-500 mb-3">Base Price: ₹${item.price}</p>
+                    <div class="mt-3"><label class="block text-xs font-bold text-gray-700 uppercase mb-2">Portion / Serving Size</label>${portionHTML}</div>
+                    <div class="mt-4"><label class="block text-xs font-bold text-gray-700 uppercase mb-2">Recommended Add-ons</label><div class="space-y-2 text-xs">${addonsHTML}</div></div>
+                    <button onclick="commitCustomizedItem()" class="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md">
+                        Add Customized Item to Cart
+                    </button>
+                </div>
+            `;
+            document.getElementById('customizeModal').classList.remove('hidden');
+        }
+
+        function selectVariant(price, name) {
+            selectedVariantExtra = price;
+            selectedVariantName = name;
+            document.querySelectorAll('.var-btn').forEach(btn => btn.className = "var-btn p-2.5 border border-gray-200 rounded-xl font-bold text-gray-700 text-center");
+            const activeBtn = document.getElementById(`var-${price}`);
+            if (activeBtn) activeBtn.className = "var-btn p-2.5 border-2 border-orange-500 bg-orange-50 rounded-xl font-bold text-orange-700 text-center";
+        }
+
+        function closeCustomizeModal() { document.getElementById('customizeModal').classList.add('hidden'); }
+
+        function commitCustomizedItem() {
+            if (!activeCustomizingItem) return;
+            let addonsTotal = 0;
+            const addonsSelected = [];
+            document.querySelectorAll('.dynamic-addon-check:checked').forEach(cb => {
+                addonsTotal += parseInt(cb.value);
+                addonsSelected.push(cb.getAttribute('data-name'));
+            });
+
+            const itemCalculatedTotal = activeCustomizingItem.price + selectedVariantExtra + addonsTotal;
+            cart.push({
+                itemId: activeCustomizingItem.itemId,
+                name: activeCustomizingItem.name,
+                unitPrice: activeCustomizingItem.price,
+                variant: selectedVariantName,
+                addons: addonsSelected,
+                itemTotal: itemCalculatedTotal
+            });
+
+            closeCustomizeModal();
+            updateCartUI();
+            toggleCartDrawer(true);
+        }
+
+        // --- CART BILLING ---
+        function updateCartUI() {
+            document.getElementById('cartCountBadge').innerText = cart.length;
+            const list = document.getElementById('cartItemList');
+            list.innerHTML = '';
+
+            if (cart.length === 0) {
+                list.innerHTML = `<div class="py-12 text-center text-gray-400 font-bold text-xs"><i class="fa-solid fa-basket-shopping text-3xl mb-2 text-gray-300 block"></i>Basket is currently empty</div>`;
+                document.getElementById('billSubtotal').innerText = '₹0';
+                document.getElementById('billGst').innerText = '₹0';
+                document.getElementById('billTotal').innerText = '₹0';
+                return;
+            }
+
+            let subtotal = 0;
+            cart.forEach((it, idx) => {
+                subtotal += it.itemTotal;
+                const row = document.createElement('div');
+                row.className = "p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-start justify-between text-xs";
+                row.innerHTML = `
+                    <div>
+                        <h4 class="font-extrabold text-gray-900">${it.name}</h4>
+                        <p class="text-[11px] text-gray-500">${it.variant} ${it.addons.length ? '• ' + it.addons.join(', ') : ''}</p>
+                        <span class="font-black text-orange-600 mt-1 block">₹${it.itemTotal}</span>
+                    </div>
+                    <button onclick="removeCartItem(${idx})" class="text-gray-400 hover:text-red-500 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                `;
+                list.appendChild(row);
+            });
+
+            const gst = Math.round(subtotal * 0.05);
+            const finalTotal = subtotal + gst;
+
+            document.getElementById('billSubtotal').innerText = `₹${subtotal}`;
+            document.getElementById('billGst').innerText = `₹${gst}`;
+            document.getElementById('billTotal').innerText = `₹${finalTotal}`;
+        }
+
+        function removeCartItem(idx) { cart.splice(idx, 1); updateCartUI(); }
+        function toggleCartDrawer(open) {
+            const drawer = document.getElementById('cartDrawer');
+            if (open) drawer.classList.remove('hidden');
+            else drawer.classList.add('hidden');
+        }
+
+        // --- ORDER SUBMISSION WITH DETAILED ADDRESS ---
+        async function placeCustomerOrder() {
+            if (cart.length === 0) { alert('Basket is empty!'); return; }
+
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const altPhone = document.getElementById('custAltPhone').value.trim();
+            const addrType = document.getElementById('addrType').value;
+            const building = document.getElementById('buildingName').value.trim();
+            const room = document.getElementById('roomNumber').value.trim();
+            const landmark = document.getElementById('landmark').value.trim();
+            const pincode = document.getElementById('pincode').value.trim();
+
+            if (!name || !phone || !building || !room) {
+                alert('Please fill Name, Phone, Building, and Room!');
+                return;
+            }
+
+            const formattedAddress = `[${addrType}] ${building}, ${room}, Near ${landmark}, Pune - ${pincode}`;
+            const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
+
+            try {
+                const res = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerName: name,
+                        phone: `${phone} ${altPhone ? '(Alt: ' + altPhone + ')' : ''}`,
+                        addressDetails: formattedAddress,
+                        items: cart,
+                        paymentMethod: payMethod
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    toggleCartDrawer(false);
+                    cart = [];
+                    updateCartUI();
+
+                    document.getElementById('trackOrderId').innerText = `Order #${data.order.orderId}`;
+                    document.getElementById('trackAddressText').innerText = data.order.address;
+                    document.getElementById('trackPhoneText').innerText = `Phone: ${data.order.phone}`;
+                    updateTrackerTimeline(data.order.orderStatus);
+                    showView('tracker');
+                    loadOrdersData();
+                }
+            } catch (err) {
+                alert('Failed to place order: ' + err.message);
+            }
+        }
+
+        // --- STORE / KITCHEN REALISTIC ACTIONS ---
+        function renderActionButtons(ord) {
+            if (ord.orderStatus === 'placed') {
+                return `
+                    <button onclick="handleStateChange('${ord.orderId}', 'preparing')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+                        <i class="fa-solid fa-kitchen-set"></i> Accept & Prepare
+                    </button>
+                `;
+            } else if (ord.orderStatus === 'preparing') {
+                return `
+                    <button onclick="handleStateChange('${ord.orderId}', 'dispatched')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+                        <i class="fa-solid fa-motorcycle"></i> Send for Delivery
+                    </button>
+                `;
+            } else if (ord.orderStatus === 'dispatched') {
+                return `
+                    <button onclick="handleStateChange('${ord.orderId}', 'delivered')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+                        <i class="fa-solid fa-check-double"></i> Mark Order Delivered
+                    </button>
+                `;
+            } else if (ord.orderStatus === 'delivered') {
+                return `
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i> Order Completed
+                    </span>
+                `;
+            } else {
+                return `<span class="text-red-500 font-bold text-xs uppercase">${ord.orderStatus}</span>`;
+            }
+        }
+
+        // --- ORDERS DATA & STATE ENGINE ---
+        async function loadOrdersData() {
+            try {
+                const res = await fetch('/api/orders');
+                const data = await res.json();
+                if (data.success) {
+                    allOrdersCache = data.data;
+
+                    // Platform Super Admin Metrics
+                    const totalRev = allOrdersCache.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+                    document.getElementById('statRevenue').innerText = `₹${totalRev}`;
+                    document.getElementById('statOrdersCount').innerText = `${allOrdersCache.length} Orders`;
+
+                    // Kitchen / Store Manager Table
+                    const managerTbody = document.getElementById('managerOrdersTableBody');
+                    managerTbody.innerHTML = '';
+                    if (allOrdersCache.length === 0) {
+                        managerTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No active kitchen orders for this cloud kitchen.</td></tr>`;
+                    } else {
+                        allOrdersCache.forEach(ord => {
+                            const tr = document.createElement('tr');
+                            tr.className = "hover:bg-gray-50/50";
+                            tr.innerHTML = `
+                                <td class="py-3 px-4 font-black text-blue-600">${ord.orderId}</td>
+                                <td class="py-3 px-4">
+                                    <span class="font-bold text-gray-900 block">${ord.customerName}</span>
+                                    <span class="text-gray-500 text-[11px] block">${ord.phone}</span>
+                                    <span class="text-gray-400 text-[10px] block truncate max-w-xs">${ord.address}</span>
+                                </td>
+                                <td class="py-3 px-4 text-gray-700">${ord.items.map(i => `${i.name} (${i.variant || 'Reg'})`).join(', ')}</td>
+                                <td class="py-3 px-4 font-black text-gray-900">₹${ord.totalAmount}</td>
+                                <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-gray-100 font-bold">${ord.paymentMethod}</span></td>
+                                <td class="py-3 px-4">${renderActionButtons(ord)}</td>
+                            `;
+                            managerTbody.appendChild(tr);
+                        });
+                    }
+
+                    // Super Admin Oversight Table
+                    const adminTbody = document.getElementById('adminOrdersTableBody');
+                    adminTbody.innerHTML = '';
+                    if (allOrdersCache.length === 0) {
+                        adminTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No logs found on platform gateway.</td></tr>`;
+                    } else {
+                        allOrdersCache.forEach(ord => {
+                            const tr = document.createElement('tr');
+                            tr.className = "hover:bg-gray-50/50";
+                            tr.innerHTML = `
+                                <td class="py-3 px-4 font-black text-purple-600">${ord.orderId}</td>
+                                <td class="py-3 px-4">
+                                    <span class="font-bold text-gray-900 block">${ord.customerName}</span>
+                                    <span class="text-gray-500 text-[11px] block">${ord.phone}</span>
+                                    <span class="text-gray-400 text-[10px] block truncate max-w-xs">${ord.address}</span>
+                                </td>
+                                <td class="py-3 px-4 text-gray-700">${ord.items.map(i => `${i.name}`).join(', ')}</td>
+                                <td class="py-3 px-4 font-black text-gray-900">₹${ord.totalAmount}</td>
+                                <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-purple-50 text-purple-700">${ord.orderStatus}</span></td>
+                                <td class="py-3 px-4">${renderActionButtons(ord)}</td>
+                            `;
+                            adminTbody.appendChild(tr);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Orders load failed:", err);
+            }
+        }
+
+        async function handleStateChange(orderId, targetStatus) {
+            try {
+                const res = await fetch(`/api/admin/orders/${orderId}/state`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-user-role': activeUser.role
+                    },
+                    body: JSON.stringify({ targetStatus })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    updateTrackerTimeline(targetStatus);
+                    loadOrdersData();
+                } else {
+                    alert(data.error?.message || 'State transition error');
+                    loadOrdersData();
+                }
+            } catch (err) {
+                alert('State update failed: ' + err.message);
+                loadOrdersData();
+            }
+        }
+
+        // --- TRACKER TIMELINE ---
+        function updateTrackerTimeline(status) {
+            const states = ['placed', 'preparing', 'dispatched', 'delivered'];
+            const idx = states.indexOf(status);
+
+            states.forEach((st, i) => {
+                const el = document.getElementById(`step-${st}`);
+                if (!el) return;
+                const circle = el.querySelector('div');
+                const label = el.querySelector('span');
+
+                if (i <= idx) {
+                    circle.className = "w-10 h-10 rounded-full flex items-center justify-center bg-orange-500 text-white shadow-md shadow-orange-500/30 mb-2 transition";
+                    label.className = "text-gray-900 font-bold";
+                } else {
+                    circle.className = "w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition";
+                    label.className = "text-gray-500";
+                }
+            });
+
+            const bar = document.getElementById('trackerProgressBar');
+            if (idx === 0) bar.style.width = '12%';
+            else if (idx === 1) bar.style.width = '38%';
+            else if (idx === 2) bar.style.width = '68%';
+            else if (idx >= 3) bar.style.width = '100%';
+        }
+
+        // --- MULTI-ROLE LOGIN MODAL ---
+        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+
+        function selectRoleTab(role) {
+            document.getElementById('authPortalRole').value = role;
+
+            ['customer', 'manager', 'admin'].forEach(r => {
+                const card = document.getElementById(`card-${r}`);
+                if (r === role) {
+                    card.className = "cursor-pointer border-2 border-orange-500 bg-orange-50 p-3 rounded-2xl text-center transition";
+                } else {
+                    card.className = "cursor-pointer border-2 border-gray-200 hover:border-gray-400 p-3 rounded-2xl text-center transition";
+                }
+            });
+
+            const emailInput = document.getElementById('authEmail');
+            const submitBtn = document.getElementById('loginSubmitBtn');
+
+            if (role === 'admin') {
+                emailInput.value = 'admin@quickbite.com';
+                submitBtn.innerText = 'Switch to Super Admin Portal';
+                submitBtn.className = 'w-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md';
+            } else if (role === 'manager') {
+                emailInput.value = 'manager@quickbite.com';
+                submitBtn.innerText = 'Switch to Kitchen Store Portal';
+                submitBtn.className = 'w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md';
+            } else {
+                emailInput.value = 'customer@quickbite.com';
+                submitBtn.innerText = 'Switch to Customer Portal';
+                submitBtn.className = 'w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md';
+            }
+            document.getElementById('authPassword').value = `${role}123`;
+        }
+
+        async function handleAuthLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const portalRole = document.getElementById('authPortalRole').value;
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, portalRole })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    activeUser = data.user;
+                    closeLoginModal();
+                    applyRoleUI(data.user.role);
+
+                    // Show top banner if authenticated into admin/manager
+                    if (data.user.role === 'admin' || data.user.role === 'manager') {
+                        document.getElementById('roleBanner').classList.remove('hidden');
+                        document.getElementById('roleBanner').classList.add('flex');
+                        document.getElementById('roleSwitchBtn').classList.remove('hidden');
+                    } else {
+                        document.getElementById('roleBanner').classList.add('hidden');
+                        document.getElementById('roleSwitchBtn').classList.add('hidden');
+                    }
+                } else {
+                    alert(data.error?.message || 'Login failed');
+                }
+            } catch (err) {
+                alert('Authentication error: ' + err.message);
+            }
+        }
+
+        function setCategoryFilter(cat) {
+            currentFilter = cat;
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                if (btn.getAttribute('data-cat') === cat) {
+                    btn.className = "cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-orange-500 text-white shadow-sm";
+                } else {
+                    btn.className = "cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200";
+                }
+            });
+            fetchCatalog();
+        }
+
+        function toggleVegOnly() {
+            vegOnly = document.getElementById('vegFilterToggle').checked;
+            fetchCatalog();
+        }
+    </script>
+</body>
+</html>
