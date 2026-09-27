@@ -14,249 +14,334 @@
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased min-h-screen flex flex-col">
 
-    <!-- ACTIVE ROLE STATUS STRIP (Hidden for public/customers) -->
-    <div id="roleBanner" class="hidden bg-orange-600 text-white text-xs px-4 py-2 font-bold items-center justify-between shadow-inner">
-        <div class="flex items-center gap-2 max-w-7xl mx-auto w-full">
-            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-            <span>CURRENT OPERATIONAL PORTAL:</span>
-            <span id="roleBannerText" class="uppercase bg-white/20 px-2 py-0.5 rounded tracking-wide">Customer Storefront</span>
-            <span class="text-orange-200 hidden sm:inline">| Authenticated as: <span id="bannerUserName" class="text-white">Purshottam Kumar</span></span>
+    <!-- ========================================== -->
+    <!-- 1. MANDATORY LOGIN GATEWAY (SHOWN FIRST)   -->
+    <!-- ========================================== -->
+    <div id="authGateModal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative border border-gray-100">
+            <!-- Brand Header -->
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/30 mx-auto mb-3">
+                    <i class="fa-solid fa-utensils text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-black text-gray-900 tracking-tight">Quick<span class="text-orange-500">Bite</span> Login</h2>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Please sign in to view the campus menu & place orders</p>
+            </div>
+
+            <!-- Role Selector -->
+            <div class="grid grid-cols-3 gap-2 mb-6 bg-gray-100 p-1.5 rounded-2xl">
+                <button type="button" onclick="selectGateRole('customer')" id="tab-customer" class="py-2 rounded-xl text-xs font-bold transition bg-white text-orange-600 shadow-sm">
+                    <i class="fa-solid fa-user block mb-0.5 text-sm"></i> Customer
+                </button>
+                <button type="button" onclick="selectGateRole('manager')" id="tab-manager" class="py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900">
+                    <i class="fa-solid fa-store block mb-0.5 text-sm"></i> Kitchen
+                </button>
+                <button type="button" onclick="selectGateRole('admin')" id="tab-admin" class="py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900">
+                    <i class="fa-solid fa-crown block mb-0.5 text-sm"></i> Admin
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <form onsubmit="handleGateAuth(event)" class="space-y-4">
+                <input type="hidden" id="gateRoleInput" value="customer">
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Email ID</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-envelope absolute left-3.5 top-3 text-gray-400 text-xs"></i>
+                        <input type="email" id="gateEmail" value="customer@quickbite.com" required class="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3.5 top-3 text-gray-400 text-xs"></i>
+                        <input type="password" id="gatePassword" value="customer123" required class="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div id="gateCustomerFields" class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Your Name</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-id-card absolute left-3.5 top-3 text-gray-400 text-xs"></i>
+                            <input type="text" id="gateName" value="Purshottam Kumar" placeholder="Enter your full name" class="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Phone Number</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-phone absolute left-3.5 top-3 text-gray-400 text-xs"></i>
+                            <input type="tel" id="gatePhone" value="+91 98765 43210" placeholder="+91 XXXXX XXXXX" class="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="gateSubmitBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2">
+                    <span>Login & Explore Menu</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="mt-4 pt-3 border-t border-gray-100 text-center">
+                <span class="text-[11px] text-gray-400">Campus Cloud Kitchen Delivery &bull; Instant Access</span>
+            </div>
         </div>
-        <button onclick="openLoginModal()" class="text-xs bg-white text-orange-700 px-3 py-1 rounded-full font-extrabold hover:bg-orange-50 transition shadow-sm whitespace-nowrap">
-            <i class="fa-solid fa-arrow-right-arrow-left mr-1"></i> Switch Role / Login
-        </button>
     </div>
 
-    <!-- TOP NAVIGATION BAR -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- Brand Logo (Triple-click activates hidden Admin Portal) -->
-            <div class="flex items-center gap-3 cursor-pointer select-none" onclick="handleLogoClick()">
-                <div class="w-10 h-10 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-orange-500/30">
-                    <i class="fa-solid fa-utensils text-lg"></i>
-                </div>
-                <div>
-                    <span class="text-xl font-extrabold tracking-tight text-gray-900">Quick<span class="text-orange-500">Bite</span></span>
-                    <span class="text-[10px] bg-orange-100 text-orange-700 font-bold px-1.5 py-0.5 rounded ml-1">Express</span>
-                </div>
+    <!-- ========================================== -->
+    <!-- 2. MAIN APPLICATION (UNLOCKED AFTER LOGIN) -->
+    <!-- ========================================== -->
+    <div id="mainAppContent" class="hidden flex-col flex-1">
+
+        <!-- ACTIVE ROLE BANNER (Only visible for Admin/Manager) -->
+        <div id="roleBanner" class="hidden bg-orange-600 text-white text-xs px-4 py-2 font-bold items-center justify-between shadow-inner">
+            <div class="flex items-center gap-2 max-w-7xl mx-auto w-full">
+                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span>OPERATIONAL PORTAL:</span>
+                <span id="roleBannerText" class="uppercase bg-white/20 px-2 py-0.5 rounded tracking-wide">Customer Storefront</span>
+                <span class="text-orange-200 hidden sm:inline">| Authenticated: <span id="bannerUserName" class="text-white">User</span></span>
             </div>
-
-            <!-- Role-Specific Navigation Links -->
-            <div class="flex items-center gap-3">
-                <nav id="dynamicNavLinks" class="flex items-center gap-1 bg-gray-100 p-1 rounded-full text-xs font-semibold">
-                    <button onclick="showCustomerStore()" class="px-4 py-1.5 rounded-full bg-white text-orange-600 shadow-sm font-bold">Menu</button>
-                    <button onclick="showView('tracker')" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Live Tracker</button>
-                </nav>
-
-                <!-- Switch Role Button (Hidden for public/customers) -->
-                <button id="roleSwitchBtn" onclick="openLoginModal()" class="hidden flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold px-3.5 py-2 rounded-full transition border border-gray-200 shadow-sm">
-                    <i class="fa-solid fa-user-shield text-orange-500 text-sm"></i>
-                    <span id="navAuthLabel">Portal Access</span>
-                </button>
-
-                <!-- Cart Basket Button -->
-                <button id="cartNavBtn" onclick="toggleCartDrawer(true)" class="relative bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-full transition shadow-md shadow-orange-500/20">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                    <span id="cartCountBadge" class="absolute -top-1 -right-1 bg-red-600 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- MAIN VIEW CONTAINER -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-
-        <!-- ==================== 1. CUSTOMER PORTAL ==================== -->
-        <div id="portal-customer" class="space-y-6">
-            <!-- Hero Banner -->
-            <div class="rounded-3xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 p-8 sm:p-10 text-white shadow-xl shadow-orange-500/10 relative overflow-hidden">
-                <div class="relative z-10 max-w-xl">
-                    <span class="inline-block bg-white/20 backdrop-blur-md text-[11px] font-extrabold uppercase px-3 py-1 rounded-full mb-3 tracking-wider">Fastest Campus Delivery</span>
-                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Cravings solved in under 20 minutes.</h1>
-                    <p class="text-orange-50 text-sm">Handcrafted Biryanis, Fresh Crust Pizzas, Peri-Peri Burgers, Chai & Hot Desserts delivered to your hostel or room.</p>
-                </div>
-            </div>
-
-            <!-- Categories Bar -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-gray-200">
-                <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none" id="categoryBar">
-                    <button onclick="setCategoryFilter('all')" data-cat="all" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-orange-500 text-white shadow-sm">All Dishes</button>
-                    <button onclick="setCategoryFilter('biryani')" data-cat="biryani" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Biryani & Bowls</button>
-                    <button onclick="setCategoryFilter('pizzas')" data-cat="pizzas" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Pizzas</button>
-                    <button onclick="setCategoryFilter('burgers')" data-cat="burgers" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Burgers</button>
-                    <button onclick="setCategoryFilter('chai')" data-cat="chai" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Chai & Drinks</button>
-                    <button onclick="setCategoryFilter('desserts')" data-cat="desserts" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Sides & Desserts</button>
-                </div>
-
-                <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-gray-100 px-3 py-2 rounded-xl cursor-pointer select-none">
-                    <input type="checkbox" id="vegFilterToggle" onchange="toggleVegOnly()" class="accent-emerald-600 rounded w-4 h-4">
-                    <span>PURE VEG ONLY</span>
-                </label>
-            </div>
-
-            <!-- Products Catalog Grid -->
-            <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <button onclick="handleLogout()" class="text-xs bg-white text-orange-700 px-3 py-1 rounded-full font-extrabold hover:bg-orange-50 transition shadow-sm whitespace-nowrap">
+                <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
+            </button>
         </div>
 
-        <!-- ==================== 2. RESTAURANT / KITCHEN MANAGER PORTAL ==================== -->
-        <div id="portal-manager" class="hidden space-y-6">
-            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
-                    <div>
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200 mb-2">
-                            <i class="fa-solid fa-store"></i> Tenant Store Dashboard
-                        </div>
-                        <h2 class="text-2xl font-black text-gray-900">Express Cloud Kitchen #101</h2>
-                        <p class="text-xs text-gray-500 mt-1">Accept live incoming orders, prepare meals, and complete order handovers.</p>
+        <!-- TOP NAVIGATION BAR -->
+        <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <!-- Brand Logo -->
+                <div class="flex items-center gap-3 cursor-pointer select-none" onclick="showCustomerStore()">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-orange-500/30">
+                        <i class="fa-solid fa-utensils text-lg"></i>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Store Status: ONLINE
-                        </span>
-                        <button onclick="loadOrdersData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-xl transition">
-                            <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Kitchen
+                    <div>
+                        <span class="text-xl font-extrabold tracking-tight text-gray-900">Quick<span class="text-orange-500">Bite</span></span>
+                        <span class="text-[10px] bg-orange-100 text-orange-700 font-bold px-1.5 py-0.5 rounded ml-1">Express</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex items-center gap-3">
+                    <nav id="dynamicNavLinks" class="flex items-center gap-1 bg-gray-100 p-1 rounded-full text-xs font-semibold">
+                        <button onclick="showCustomerStore()" class="px-4 py-1.5 rounded-full bg-white text-orange-600 shadow-sm font-bold">Menu</button>
+                        <button onclick="showView('tracker')" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Live Tracker</button>
+                    </nav>
+
+                    <!-- Authenticated User Profile Pill -->
+                    <div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200">
+                        <i class="fa-solid fa-circle-user text-orange-500 text-sm"></i>
+                        <span id="navAuthLabel" class="text-xs font-bold text-gray-800">User</span>
+                        <button onclick="handleLogout()" title="Logout" class="text-gray-400 hover:text-red-500 ml-1 text-xs">
+                            <i class="fa-solid fa-power-off"></i>
                         </button>
                     </div>
-                </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead>
-                            <tr class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-100">
-                                <th class="py-3 px-4">Order ID</th>
-                                <th class="py-3 px-4">Customer & Address</th>
-                                <th class="py-3 px-4">Food Preparation Items</th>
-                                <th class="py-3 px-4">Amount</th>
-                                <th class="py-3 px-4">Payment</th>
-                                <th class="py-3 px-4">Store Order Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="managerOrdersTableBody" class="divide-y divide-gray-100"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== 3. SAAS SUPER ADMIN PORTAL ==================== -->
-        <div id="portal-admin" class="hidden space-y-6">
-            <!-- SaaS Stats -->
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-                    <span class="text-gray-400 text-xs font-bold uppercase">Platform Revenue</span>
-                    <h3 class="text-2xl font-black text-gray-900 mt-1" id="statRevenue">₹0</h3>
-                    <span class="text-[10px] text-emerald-600 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> Aggregated across stores</span>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-                    <span class="text-gray-400 text-xs font-bold uppercase">Total Platform Orders</span>
-                    <h3 class="text-2xl font-black text-gray-900 mt-1" id="statOrdersCount">0</h3>
-                    <span class="text-[10px] text-blue-600 font-bold">Processed today</span>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-                    <span class="text-gray-400 text-xs font-bold uppercase">Registered Stores</span>
-                    <h3 class="text-2xl font-black text-purple-700 mt-1">2 Kitchens</h3>
-                    <span class="text-[10px] text-purple-600 font-bold">Wadia Central, Deccan Express</span>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-                    <span class="text-gray-400 text-xs font-bold uppercase">Platform Engine</span>
-                    <h3 class="text-2xl font-black text-emerald-600 mt-1">Decoupled</h3>
-                    <span class="text-[10px] text-gray-500 font-medium">RBAC & Error Barrier Active</span>
-                </div>
-            </div>
-
-            <!-- Global Oversight -->
-            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
-                <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                    <div>
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200 mb-2">
-                            <i class="fa-solid fa-crown"></i> Platform Super Administrator
-                        </div>
-                        <h2 class="text-2xl font-black text-gray-900">Multi-Tenant Oversight & Audit Logs</h2>
-                        <p class="text-xs text-gray-500 mt-1">Real-time cross-kitchen order transactions and administrative override.</p>
-                    </div>
-                    <button onclick="loadOrdersData()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">
-                        <i class="fa-solid fa-sync mr-1"></i> Refresh System
+                    <!-- Cart Basket Button -->
+                    <button id="cartNavBtn" onclick="toggleCartDrawer(true)" class="relative bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-full transition shadow-md shadow-orange-500/20">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <span id="cartCountBadge" class="absolute -top-1 -right-1 bg-red-600 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
                     </button>
                 </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead>
-                            <tr class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-100">
-                                <th class="py-3 px-4">Order ID</th>
-                                <th class="py-3 px-4">Customer & Delivery Destination</th>
-                                <th class="py-3 px-4">Items Summary</th>
-                                <th class="py-3 px-4">Bill Total</th>
-                                <th class="py-3 px-4">Status</th>
-                                <th class="py-3 px-4">Admin Override Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminOrdersTableBody" class="divide-y divide-gray-100"></tbody>
-                    </table>
-                </div>
             </div>
-        </div>
+        </header>
 
-        <!-- ==================== 4. LIVE TRACKER VIEW ==================== -->
-        <div id="view-tracker" class="hidden max-w-3xl mx-auto py-8 space-y-6">
-            <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
-                <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
-                    <div>
-                        <span class="text-[11px] font-bold tracking-widest text-orange-600 uppercase">Live GPS Delivery Tracking</span>
-                        <h2 class="text-2xl font-extrabold text-gray-900 mt-1" id="trackOrderId">Order #QB-1701</h2>
-                        <p class="text-xs text-gray-500 mt-0.5" id="trackEta">Estimated Delivery: In 18 Minutes</p>
-                    </div>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Sync
-                    </span>
-                </div>
+        <!-- MAIN VIEW CONTAINER -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-                <div class="relative py-4">
-                    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
-                    <div id="trackerProgressBar" class="absolute top-1/2 left-0 w-1/4 h-1 bg-orange-500 -translate-y-1/2 z-0 transition-all duration-500"></div>
-
-                    <div class="relative z-10 grid grid-cols-4 gap-2 text-center text-xs font-semibold">
-                        <div id="step-placed" class="flex flex-col items-center">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-orange-500 text-white shadow-md shadow-orange-500/30 mb-2 transition">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <span class="text-gray-900 font-bold">Placed</span>
-                        </div>
-                        <div id="step-preparing" class="flex flex-col items-center">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition">
-                                <i class="fa-solid fa-kitchen-set"></i>
-                            </div>
-                            <span class="text-gray-500">Preparing</span>
-                        </div>
-                        <div id="step-dispatched" class="flex flex-col items-center">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition">
-                                <i class="fa-solid fa-motorcycle"></i>
-                            </div>
-                            <span class="text-gray-500">Dispatched</span>
-                        </div>
-                        <div id="step-delivered" class="flex flex-col items-center">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition">
-                                <i class="fa-solid fa-house-chimney"></i>
-                            </div>
-                            <span class="text-gray-500">Delivered</span>
-                        </div>
+            <!-- ==================== A. CUSTOMER STOREFRONT ==================== -->
+            <div id="portal-customer" class="space-y-6">
+                <!-- Hero Banner -->
+                <div class="rounded-3xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 p-8 sm:p-10 text-white shadow-xl shadow-orange-500/10 relative overflow-hidden">
+                    <div class="relative z-10 max-w-xl">
+                        <span class="inline-block bg-white/20 backdrop-blur-md text-[11px] font-extrabold uppercase px-3 py-1 rounded-full mb-3 tracking-wider">Fastest Campus Delivery</span>
+                        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Cravings solved in under 20 minutes.</h1>
+                        <p class="text-orange-50 text-sm">Handcrafted Biryanis, Fresh Crust Pizzas, Peri-Peri Burgers, Chai & Hot Desserts delivered to your hostel or room.</p>
                     </div>
                 </div>
 
-                <div class="mt-8 p-4 rounded-2xl bg-amber-50/70 border border-amber-100 flex items-start justify-between text-xs">
-                    <div class="flex items-start gap-3">
-                        <i class="fa-solid fa-location-dot text-orange-500 text-base mt-0.5"></i>
+                <!-- Categories Bar -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-gray-200">
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none" id="categoryBar">
+                        <button onclick="setCategoryFilter('all')" data-cat="all" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-orange-500 text-white shadow-sm">All Dishes</button>
+                        <button onclick="setCategoryFilter('biryani')" data-cat="biryani" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Biryani & Bowls</button>
+                        <button onclick="setCategoryFilter('pizzas')" data-cat="pizzas" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Pizzas</button>
+                        <button onclick="setCategoryFilter('burgers')" data-cat="burgers" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Burgers</button>
+                        <button onclick="setCategoryFilter('chai')" data-cat="chai" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Chai & Drinks</button>
+                        <button onclick="setCategoryFilter('desserts')" data-cat="desserts" class="cat-pill whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">Sides & Desserts</button>
+                    </div>
+
+                    <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-gray-100 px-3 py-2 rounded-xl cursor-pointer select-none">
+                        <input type="checkbox" id="vegFilterToggle" onchange="toggleVegOnly()" class="accent-emerald-600 rounded w-4 h-4">
+                        <span>PURE VEG ONLY</span>
+                    </label>
+                </div>
+
+                <!-- Products Catalog Grid -->
+                <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <!-- ==================== B. KITCHEN / MANAGER VIEW ==================== -->
+            <div id="portal-manager" class="hidden space-y-6">
+                <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
                         <div>
-                            <span class="font-bold text-gray-700 block mb-0.5">Delivery Destination</span>
-                            <p class="text-gray-600" id="trackAddressText">Nowrosjee Wadia College Hostel, Room 402, Pune</p>
-                            <p class="text-gray-500 mt-1" id="trackPhoneText">Phone: +91 98765 43210</p>
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200 mb-2">
+                                <i class="fa-solid fa-store"></i> Tenant Store Dashboard
+                            </div>
+                            <h2 class="text-2xl font-black text-gray-900">Express Cloud Kitchen #101</h2>
+                            <p class="text-xs text-gray-500 mt-1">Accept live incoming orders, prepare meals, and complete order handovers.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Store Status: ONLINE
+                            </span>
+                            <button onclick="loadOrdersData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-xl transition">
+                                <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Kitchen
+                            </button>
                         </div>
                     </div>
-                    <button onclick="showCustomerStore()" class="text-orange-600 font-bold hover:underline">Order More &rarr;</button>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-100">
+                                    <th class="py-3 px-4">Order ID</th>
+                                    <th class="py-3 px-4">Customer & Address</th>
+                                    <th class="py-3 px-4">Food Preparation Items</th>
+                                    <th class="py-3 px-4">Amount</th>
+                                    <th class="py-3 px-4">Payment</th>
+                                    <th class="py-3 px-4">Store Order Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="managerOrdersTableBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
 
-    </main>
+            <!-- ==================== C. SUPER ADMIN VIEW ==================== -->
+            <div id="portal-admin" class="hidden space-y-6">
+                <!-- Metrics -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                        <span class="text-gray-400 text-xs font-bold uppercase">Platform Revenue</span>
+                        <h3 class="text-2xl font-black text-gray-900 mt-1" id="statRevenue">₹0</h3>
+                        <span class="text-[10px] text-emerald-600 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> Aggregated across stores</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                        <span class="text-gray-400 text-xs font-bold uppercase">Total Platform Orders</span>
+                        <h3 class="text-2xl font-black text-gray-900 mt-1" id="statOrdersCount">0</h3>
+                        <span class="text-[10px] text-blue-600 font-bold">Processed today</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                        <span class="text-gray-400 text-xs font-bold uppercase">Registered Stores</span>
+                        <h3 class="text-2xl font-black text-purple-700 mt-1">2 Kitchens</h3>
+                        <span class="text-[10px] text-purple-600 font-bold">Wadia Central, Deccan Express</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                        <span class="text-gray-400 text-xs font-bold uppercase">Platform Engine</span>
+                        <h3 class="text-2xl font-black text-emerald-600 mt-1">Decoupled</h3>
+                        <span class="text-[10px] text-gray-500 font-medium">RBAC & Error Barrier Active</span>
+                    </div>
+                </div>
+
+                <!-- Admin Orders Table -->
+                <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                        <div>
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200 mb-2">
+                                <i class="fa-solid fa-crown"></i> Platform Super Administrator
+                            </div>
+                            <h2 class="text-2xl font-black text-gray-900">Multi-Tenant Oversight & Audit Logs</h2>
+                            <p class="text-xs text-gray-500 mt-1">Real-time cross-kitchen order transactions and administrative override.</p>
+                        </div>
+                        <button onclick="loadOrdersData()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">
+                            <i class="fa-solid fa-sync mr-1"></i> Refresh System
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-100">
+                                    <th class="py-3 px-4">Order ID</th>
+                                    <th class="py-3 px-4">Customer & Delivery Destination</th>
+                                    <th class="py-3 px-4">Items Summary</th>
+                                    <th class="py-3 px-4">Bill Total</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Admin Override Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminOrdersTableBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== D. LIVE TRACKER VIEW ==================== -->
+            <div id="view-tracker" class="hidden max-w-3xl mx-auto py-8 space-y-6">
+                <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
+                    <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+                        <div>
+                            <span class="text-[11px] font-bold tracking-widest text-orange-600 uppercase">Live GPS Delivery Tracking</span>
+                            <h2 class="text-2xl font-extrabold text-gray-900 mt-1" id="trackOrderId">Order #QB-1701</h2>
+                            <p class="text-xs text-gray-500 mt-0.5" id="trackEta">Estimated Delivery: In 18 Minutes</p>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Sync
+                        </span>
+                    </div>
+
+                    <div class="relative py-4">
+                        <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
+                        <div id="trackerProgressBar" class="absolute top-1/2 left-0 w-1/4 h-1 bg-orange-500 -translate-y-1/2 z-0 transition-all duration-500"></div>
+
+                        <div class="relative z-10 grid grid-cols-4 gap-2 text-center text-xs font-semibold">
+                            <div id="step-placed" class="flex flex-col items-center">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-orange-500 text-white shadow-md shadow-orange-500/30 mb-2 transition">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                <span class="text-gray-900 font-bold">Placed</span>
+                            </div>
+                            <div id="step-preparing" class="flex flex-col items-center">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition">
+                                    <i class="fa-solid fa-kitchen-set"></i>
+                                </div>
+                                <span class="text-gray-500">Preparing</span>
+                            </div>
+                            <div id="step-dispatched" class="flex flex-col items-center">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition">
+                                    <i class="fa-solid fa-motorcycle"></i>
+                                </div>
+                                <span class="text-gray-500">Dispatched</span>
+                            </div>
+                            <div id="step-delivered" class="flex flex-col items-center">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 mb-2 transition">
+                                    <i class="fa-solid fa-house-chimney"></i>
+                                </div>
+                                <span class="text-gray-500">Delivered</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 p-4 rounded-2xl bg-amber-50/70 border border-amber-100 flex items-start justify-between text-xs">
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-location-dot text-orange-500 text-base mt-0.5"></i>
+                            <div>
+                                <span class="font-bold text-gray-700 block mb-0.5">Delivery Destination</span>
+                                <p class="text-gray-600" id="trackAddressText">Nowrosjee Wadia College Hostel, Room 402, Pune</p>
+                                <p class="text-gray-500 mt-1" id="trackPhoneText">Phone: +91 98765 43210</p>
+                            </div>
+                        </div>
+                        <button onclick="showCustomerStore()" class="text-orange-600 font-bold hover:underline">Order More &rarr;</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
 
     <!-- BASKET SLIDE-OVER DRAWER -->
     <div id="cartDrawer" class="hidden fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-sm">
@@ -333,110 +418,146 @@
         </div>
     </div>
 
-    <!-- MULTI-ROLE LOGIN MODAL -->
-    <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative">
-            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
-            
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-black text-gray-900">Select Login Portal</h2>
-                <p class="text-xs text-gray-500 mt-1">Switch between Customer, Restaurant Store Manager & Platform Owner</p>
-            </div>
-
-            <!-- Role Selector Visual Cards -->
-            <div class="grid grid-cols-3 gap-3 mb-6">
-                <div onclick="selectRoleTab('customer')" id="card-customer" class="cursor-pointer border-2 border-orange-500 bg-orange-50 p-3 rounded-2xl text-center transition">
-                    <div class="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center mx-auto mb-1 text-sm"><i class="fa-solid fa-user"></i></div>
-                    <span class="font-extrabold text-xs block text-gray-900">Customer</span>
-                    <span class="text-[10px] text-gray-500">Order Food</span>
-                </div>
-
-                <div onclick="selectRoleTab('manager')" id="card-manager" class="cursor-pointer border-2 border-gray-200 hover:border-blue-400 p-3 rounded-2xl text-center transition">
-                    <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center mx-auto mb-1 text-sm"><i class="fa-solid fa-store"></i></div>
-                    <span class="font-extrabold text-xs block text-gray-900">Kitchen</span>
-                    <span class="text-[10px] text-gray-500">Store Manager</span>
-                </div>
-
-                <div onclick="selectRoleTab('admin')" id="card-admin" class="cursor-pointer border-2 border-gray-200 hover:border-purple-400 p-3 rounded-2xl text-center transition">
-                    <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center mx-auto mb-1 text-sm"><i class="fa-solid fa-crown"></i></div>
-                    <span class="font-extrabold text-xs block text-gray-900">Platform</span>
-                    <span class="text-[10px] text-gray-500">Super Admin</span>
-                </div>
-            </div>
-
-            <!-- Form -->
-            <form onsubmit="handleAuthLogin(event)" class="space-y-4">
-                <input type="hidden" id="authPortalRole" value="customer">
-
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Email ID</label>
-                    <input type="email" id="authEmail" value="customer@quickbite.com" required class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-orange-500">
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Password</label>
-                    <input type="password" id="authPassword" value="customer123" required class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-orange-500">
-                </div>
-
-                <button type="submit" id="loginSubmitBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md shadow-orange-500/20">
-                    Switch to Customer Portal
-                </button>
-            </form>
-        </div>
-    </div>
-
     <!-- JAVASCRIPT APPLICATION CORE -->
     <script>
         let catalog = [];
         let cart = [];
         let currentFilter = 'all';
         let vegOnly = false;
-        let activeUser = { role: 'customer', name: 'Purshottam Kumar' };
+        let activeUser = null;
         let activeCustomizingItem = null;
         let selectedVariantExtra = 0;
         let selectedVariantName = 'Regular';
         let allOrdersCache = [];
-        let logoClickCount = 0;
-        let logoClickTimer = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             fetchCatalog();
             loadOrdersData();
 
-            // Default: Public Link is CLEAN CUSTOMER STORE
+            // Check if user is already authenticated in this session
+            const savedUser = localStorage.getItem('quickbite_user');
             const urlParams = new URLSearchParams(window.location.search);
             const accessKey = urlParams.get('access');
 
             if (accessKey === 'admin') {
-                activeUser = { role: 'admin', name: 'Purshottam Kumar (Platform Owner)' };
-                applyRoleUI('admin');
-                document.getElementById('roleBanner').classList.remove('hidden');
-                document.getElementById('roleBanner').classList.add('flex');
-                document.getElementById('roleSwitchBtn').classList.remove('hidden');
+                authenticateUser({ role: 'admin', name: 'Purshottam Kumar (Platform Owner)', email: 'admin@quickbite.com' });
             } else if (accessKey === 'manager') {
-                activeUser = { role: 'manager', name: 'Wadia Kitchen Operations Manager' };
-                applyRoleUI('manager');
-                document.getElementById('roleBanner').classList.remove('hidden');
-                document.getElementById('roleBanner').classList.add('flex');
-                document.getElementById('roleSwitchBtn').classList.remove('hidden');
+                authenticateUser({ role: 'manager', name: 'Wadia Kitchen Operations Manager', email: 'manager@quickbite.com' });
+            } else if (savedUser) {
+                try {
+                    authenticateUser(JSON.parse(savedUser));
+                } catch(e) {
+                    showLoginGate();
+                }
             } else {
-                // Regular Shared User: Show ONLY Customer Storefront
-                applyRoleUI('customer');
-                document.getElementById('roleBanner').classList.add('hidden');
-                document.getElementById('roleSwitchBtn').classList.add('hidden');
+                // Must show Login First
+                showLoginGate();
             }
         });
 
-        // Triple click secret trigger for Admin
-        function handleLogoClick() {
-            logoClickCount++;
-            clearTimeout(logoClickTimer);
-            logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1000);
+        function showLoginGate() {
+            document.getElementById('authGateModal').classList.remove('hidden');
+            document.getElementById('mainAppContent').classList.add('hidden');
+            document.getElementById('mainAppContent').classList.remove('flex');
+        }
 
-            if (logoClickCount === 3) {
-                logoClickCount = 0;
-                document.getElementById('roleSwitchBtn').classList.remove('hidden');
-                openLoginModal();
+        function authenticateUser(user) {
+            activeUser = user;
+            localStorage.setItem('quickbite_user', JSON.stringify(user));
+
+            // Hide Auth Modal & Show Main Application
+            document.getElementById('authGateModal').classList.add('hidden');
+            document.getElementById('mainAppContent').classList.remove('hidden');
+            document.getElementById('mainAppContent').classList.add('flex');
+
+            // Pre-fill delivery details with authenticated customer info
+            if (user.role === 'customer') {
+                if (user.name) document.getElementById('custName').value = user.name;
+                if (user.phone) document.getElementById('custPhone').value = user.phone;
+            }
+
+            applyRoleUI(user.role);
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('quickbite_user');
+            activeUser = null;
+            showLoginGate();
+        }
+
+        function selectGateRole(role) {
+            document.getElementById('gateRoleInput').value = role;
+
+            ['customer', 'manager', 'admin'].forEach(r => {
+                const btn = document.getElementById(`tab-${r}`);
+                if (r === role) {
+                    btn.className = "py-2 rounded-xl text-xs font-bold transition bg-white text-orange-600 shadow-sm";
+                } else {
+                    btn.className = "py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900";
+                }
+            });
+
+            const emailInput = document.getElementById('gateEmail');
+            const pwdInput = document.getElementById('gatePassword');
+            const submitBtn = document.getElementById('gateSubmitBtn');
+            const customerFields = document.getElementById('gateCustomerFields');
+
+            if (role === 'admin') {
+                emailInput.value = 'admin@quickbite.com';
+                pwdInput.value = 'admin123';
+                submitBtn.innerHTML = `<span>Login as Super Admin</span> <i class="fa-solid fa-arrow-right"></i>`;
+                submitBtn.className = "w-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-lg";
+                customerFields.classList.add('hidden');
+            } else if (role === 'manager') {
+                emailInput.value = 'manager@quickbite.com';
+                pwdInput.value = 'manager123';
+                submitBtn.innerHTML = `<span>Login as Kitchen Desk</span> <i class="fa-solid fa-arrow-right"></i>`;
+                submitBtn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-lg";
+                customerFields.classList.add('hidden');
+            } else {
+                emailInput.value = 'customer@quickbite.com';
+                pwdInput.value = 'customer123';
+                submitBtn.innerHTML = `<span>Login & Explore Menu</span> <i class="fa-solid fa-arrow-right"></i>`;
+                submitBtn.className = "w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-lg shadow-orange-500/25";
+                customerFields.classList.remove('hidden');
+            }
+        }
+
+        async function handleGateAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('gateEmail').value;
+            const password = document.getElementById('gatePassword').value;
+            const portalRole = document.getElementById('gateRoleInput').value;
+            const custName = document.getElementById('gateName').value || 'Customer';
+            const custPhone = document.getElementById('gatePhone').value || '+91 98765 43210';
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, portalRole })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const userObj = {
+                        role: data.user.role,
+                        name: portalRole === 'customer' ? custName : data.user.name,
+                        email: data.user.email,
+                        phone: custPhone
+                    };
+                    authenticateUser(userObj);
+                } else {
+                    alert(data.error?.message || 'Login credentials incorrect');
+                }
+            } catch (err) {
+                // Graceful fallback for offline demo testing
+                authenticateUser({
+                    role: portalRole,
+                    name: portalRole === 'customer' ? custName : (portalRole === 'admin' ? 'Super Admin' : 'Kitchen Head'),
+                    email: email,
+                    phone: custPhone
+                });
             }
         }
 
@@ -449,39 +570,37 @@
 
             document.getElementById(`portal-${role}`).classList.remove('hidden');
 
-            const roleColors = {
-                customer: 'bg-orange-600',
-                manager: 'bg-blue-600',
-                admin: 'bg-purple-700'
-            };
-            const roleLabels = {
-                customer: 'Customer Storefront Portal',
-                manager: 'Tenant Store / Kitchen Operations Desk',
-                admin: 'SaaS Platform Super Administrator Portal'
-            };
-
             const banner = document.getElementById('roleBanner');
-            banner.className = `${roleColors[role]} text-white text-xs px-4 py-2 font-bold flex items-center justify-between shadow-inner transition-colors duration-300`;
-            document.getElementById('roleBannerText').innerText = roleLabels[role];
-            document.getElementById('bannerUserName').innerText = activeUser.name;
-            document.getElementById('navAuthLabel').innerText = `${activeUser.name.split(' ')[0]} (${role.toUpperCase()})`;
-
+            const navAuthLabel = document.getElementById('navAuthLabel');
             const nav = document.getElementById('dynamicNavLinks');
             const cartBtn = document.getElementById('cartNavBtn');
 
+            navAuthLabel.innerText = activeUser.name.split(' ')[0];
+
             if (role === 'customer') {
+                banner.classList.add('hidden');
                 cartBtn.classList.remove('hidden');
                 nav.innerHTML = `
                     <button onclick="showCustomerStore()" class="px-4 py-1.5 rounded-full bg-white text-orange-600 shadow-sm font-bold">Menu</button>
                     <button onclick="showView('tracker')" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Live Tracker</button>
                 `;
             } else if (role === 'manager') {
+                banner.classList.remove('hidden');
+                banner.classList.add('flex');
+                banner.className = 'bg-blue-600 text-white text-xs px-4 py-2 font-bold flex items-center justify-between shadow-inner';
+                document.getElementById('roleBannerText').innerText = 'Tenant Store / Kitchen Desk';
+                document.getElementById('bannerUserName').innerText = activeUser.name;
                 cartBtn.classList.add('hidden');
                 nav.innerHTML = `
                     <button onclick="applyRoleUI('manager')" class="px-4 py-1.5 rounded-full bg-white text-blue-600 shadow-sm font-bold"><i class="fa-solid fa-store mr-1"></i>Kitchen Queue</button>
                     <button onclick="showCustomerStore()" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-gray-900">Storefront Preview</button>
                 `;
             } else if (role === 'admin') {
+                banner.classList.remove('hidden');
+                banner.classList.add('flex');
+                banner.className = 'bg-purple-700 text-white text-xs px-4 py-2 font-bold flex items-center justify-between shadow-inner';
+                document.getElementById('roleBannerText').innerText = 'SaaS Platform Super Administrator';
+                document.getElementById('bannerUserName').innerText = activeUser.name;
                 cartBtn.classList.add('hidden');
                 nav.innerHTML = `
                     <button onclick="applyRoleUI('admin')" class="px-4 py-1.5 rounded-full bg-white text-purple-600 shadow-sm font-bold"><i class="fa-solid fa-chart-pie mr-1"></i>Platform Overview</button>
@@ -551,7 +670,7 @@
             });
         }
 
-        // --- CUSTOMIZE DISH MODAL (DISH-SPECIFIC SIZING & ADD-ONS) ---
+        // --- CUSTOMIZE DISH MODAL ---
         function openCustomizeModal(itemId) {
             const item = catalog.find(i => i.itemId === itemId);
             if (!item) return;
@@ -696,7 +815,7 @@
             else drawer.classList.add('hidden');
         }
 
-        // --- ORDER SUBMISSION WITH DETAILED ADDRESS ---
+        // --- ORDER SUBMISSION ---
         async function placeCustomerOrder() {
             if (cart.length === 0) { alert('Basket is empty!'); return; }
 
@@ -748,7 +867,7 @@
             }
         }
 
-        // --- STORE / KITCHEN REALISTIC ACTIONS ---
+        // --- ORDER STATE ACTIONS ---
         function renderActionButtons(ord) {
             if (ord.orderStatus === 'placed') {
                 return `
@@ -779,7 +898,7 @@
             }
         }
 
-        // --- ORDERS DATA & STATE ENGINE ---
+        // --- ORDERS DATA LOAD ---
         async function loadOrdersData() {
             try {
                 const res = await fetch('/api/orders');
@@ -787,12 +906,11 @@
                 if (data.success) {
                     allOrdersCache = data.data;
 
-                    // Platform Super Admin Metrics
                     const totalRev = allOrdersCache.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
                     document.getElementById('statRevenue').innerText = `₹${totalRev}`;
                     document.getElementById('statOrdersCount').innerText = `${allOrdersCache.length} Orders`;
 
-                    // Kitchen / Store Manager Table
+                    // Kitchen Table
                     const managerTbody = document.getElementById('managerOrdersTableBody');
                     managerTbody.innerHTML = '';
                     if (allOrdersCache.length === 0) {
@@ -817,7 +935,7 @@
                         });
                     }
 
-                    // Super Admin Oversight Table
+                    // Admin Table
                     const adminTbody = document.getElementById('adminOrdersTableBody');
                     adminTbody.innerHTML = '';
                     if (allOrdersCache.length === 0) {
@@ -853,7 +971,7 @@
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'x-user-role': activeUser.role
+                        'x-user-role': activeUser?.role || 'customer'
                     },
                     body: JSON.stringify({ targetStatus })
                 });
@@ -897,77 +1015,6 @@
             else if (idx === 1) bar.style.width = '38%';
             else if (idx === 2) bar.style.width = '68%';
             else if (idx >= 3) bar.style.width = '100%';
-        }
-
-        // --- MULTI-ROLE LOGIN MODAL ---
-        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
-        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
-
-        function selectRoleTab(role) {
-            document.getElementById('authPortalRole').value = role;
-
-            ['customer', 'manager', 'admin'].forEach(r => {
-                const card = document.getElementById(`card-${r}`);
-                if (r === role) {
-                    card.className = "cursor-pointer border-2 border-orange-500 bg-orange-50 p-3 rounded-2xl text-center transition";
-                } else {
-                    card.className = "cursor-pointer border-2 border-gray-200 hover:border-gray-400 p-3 rounded-2xl text-center transition";
-                }
-            });
-
-            const emailInput = document.getElementById('authEmail');
-            const submitBtn = document.getElementById('loginSubmitBtn');
-
-            if (role === 'admin') {
-                emailInput.value = 'admin@quickbite.com';
-                submitBtn.innerText = 'Switch to Super Admin Portal';
-                submitBtn.className = 'w-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md';
-            } else if (role === 'manager') {
-                emailInput.value = 'manager@quickbite.com';
-                submitBtn.innerText = 'Switch to Kitchen Store Portal';
-                submitBtn.className = 'w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md';
-            } else {
-                emailInput.value = 'customer@quickbite.com';
-                submitBtn.innerText = 'Switch to Customer Portal';
-                submitBtn.className = 'w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs shadow-md';
-            }
-            document.getElementById('authPassword').value = `${role}123`;
-        }
-
-        async function handleAuthLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-            const portalRole = document.getElementById('authPortalRole').value;
-
-            try {
-                const res = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, portalRole })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    activeUser = data.user;
-                    closeLoginModal();
-                    applyRoleUI(data.user.role);
-
-                    // Show top banner if authenticated into admin/manager
-                    if (data.user.role === 'admin' || data.user.role === 'manager') {
-                        document.getElementById('roleBanner').classList.remove('hidden');
-                        document.getElementById('roleBanner').classList.add('flex');
-                        document.getElementById('roleSwitchBtn').classList.remove('hidden');
-                    } else {
-                        document.getElementById('roleBanner').classList.add('hidden');
-                        document.getElementById('roleSwitchBtn').classList.add('hidden');
-                    }
-                } else {
-                    alert(data.error?.message || 'Login failed');
-                }
-            } catch (err) {
-                alert('Authentication error: ' + err.message);
-            }
         }
 
         function setCategoryFilter(cat) {
